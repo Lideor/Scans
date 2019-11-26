@@ -18,6 +18,7 @@ import android.content.Intent;
 
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -50,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
     private LocationManager locationManager;// локация
     Context Ctn = this;
     Location location;
+    final String LOG_TAG = "myLogs";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,9 +63,11 @@ public class MainActivity extends AppCompatActivity {
 
             startActivity(intent);
         }
-         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        Log.d(LOG_TAG, "onStartCommand");
+        startService(new Intent(this, ServiceGps.class));
 
-        int permissionStatus = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+       /* int permissionStatus = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
 
         if (permissionStatus == PackageManager.PERMISSION_GRANTED) {
 
@@ -73,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION},
                     REQUEST_CODE_ACCESS_FINE_LOCATION);
 
-        }
+        }*/
 
     }
 
@@ -99,19 +103,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        System.out.println("asdasdasdasdasdasdasdasdasd");
-
 
     }
     @Override
     protected void onStop() {
         super.onStop();
-        int permissionStatus = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
-
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                1000 * 1, 10, locationListener);
-        new RequestTask().execute("http://www.zaural-vodokanal.ru/php/get_pos.php");
-
+        new RequestTask().execute("");
     }
     //работа с разрешениями
 
@@ -270,6 +267,11 @@ public class MainActivity extends AppCompatActivity {
                 }
                 //посылаем на вторую активность полученные параметры
                 */
+
+                int permissionStatus = ContextCompat.checkSelfPermission(Ctn, Manifest.permission.ACCESS_FINE_LOCATION);
+
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                        1000 * 1, 10, locationListener);
 
                int i=0;
                while (i!=-1) {
