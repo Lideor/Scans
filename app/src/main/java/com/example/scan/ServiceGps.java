@@ -8,6 +8,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 
@@ -32,30 +33,41 @@ import android.util.Log;
 
 import androidx.core.content.ContextCompat;
 
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class ServiceGps extends Service {
+
     public static final int TWO_MINUTES = 120000; // 120 seconds
     public static Boolean isRunning = false;
     public static final String CHANNEL_ID = "ForegroundServiceChannel";
 
-    final String LOG_TAG = "myLogs";
-    private LocationManager locationManager;// локация
-    Context Ctn = this;
-    Handler mHandler = new Handler();
+    //работа с инетом
+    private String url = "http://www.zaural-vodokanal.ru/php/get_pos.php"; // отправка локации
+    private SendOnePackage sender = new SendOnePackage(); // класс единичной отправки пакета
 
-    protected void onHandleIntent(Intent intent) {
-        int tm = intent.getIntExtra("time", 0);
-        String label = intent.getStringExtra("label");
-        Log.d(LOG_TAG, "onHandleIntent start " + label);
-        try {
-            TimeUnit.SECONDS.sleep(tm);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        Log.d(LOG_TAG, "onHandleIntent end " + label);
-    }
+    //настройки на телефоне
+    private int login_id = -1;//айдишник пользователя
+    SharedPreferences sPref;// файл с настройками
+
+    //отладка
+    final String LOG_TAG = "myLogs";//тег консоли
+
+
+    private LocationManager locationManager;// локация
+    Context Ctn = this;// текущий контент, нужен для получения списка разрешений
+
+    Handler mHandler = new Handler();
 
     public void onCreate() {
         super.onCreate();
@@ -70,43 +82,51 @@ public class ServiceGps extends Service {
         }
     }
 
+    private int loadSaveId(){
+        sPref = getSharedPreferences("prefs",MODE_PRIVATE);
+        login_id = sPref.getInt("login_id", -1);
+        if (login_id == -1) return 0;
+        else return 1;
 
+    }
 
     public int onStartCommand(Intent intent, int flags, int startId) {
-       /* int permissionStatus = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                1000 * 1, 10, locationListener);
-        */
         Log.d(LOG_TAG, "tut");
-        NotificationManager notificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "My channel",
-                    NotificationManager.IMPORTANCE_HIGH);
-            channel.setDescription("My channel description");
-            channel.enableLights(true);
-            channel.setLightColor(Color.RED);
-            channel.enableVibration(false);
-            notificationManager.createNotificationChannel(channel);
+        if(loadSaveId()==1) {
+            NotificationManager notificationManager =
+                    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "My channel",
+                        NotificationManager.IMPORTANCE_HIGH);
+                channel.setDescription("My channel description");
+                channel.enableLights(true);
+                channel.setLightColor(Color.RED);
+                channel.enableVibration(false);
+                notificationManager.createNotificationChannel(channel);
+            }
+
+            Intent notificationIntent = new Intent(this, MainActivity.class);
+
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
+                    notificationIntent, 0);
+
+            Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                    .setContentTitle("Я лисичка")
+                    .setContentText("Фыр фыр фыр")
+                    .setSmallIcon(R.drawable.ic_launcher_background)
+                    .setContentIntent(pendingIntent)
+                    .build();
+
+            startForeground(1, notification);
         }
-
-        Intent notificationIntent = new Intent(this, MainActivity.class);
-
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
-                notificationIntent, 0);
-
-        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Я лисичка")
-                .setContentText("Фыр фыр фыр")
-                .setSmallIcon(R.drawable.ic_launcher_background)
-                .setContentIntent(pendingIntent)
-                .build();
-
-        startForeground(1, notification);
         return super.onStartCommand(intent, flags, startId);
+    }
 
+    private void stopCommand(){
+        stopForeground(true);
+        stopSelf();
     }
 
     public void onDestroy() {
@@ -119,6 +139,7 @@ public class ServiceGps extends Service {
         return null;
     }
 
+    //класс слушателя гпс, реагирующего на изменения геоданных
     private LocationListener locationListener = new LocationListener() {
 
         @Override
@@ -163,8 +184,15 @@ public class ServiceGps extends Service {
         if (location == null)
             return "";
         System.out.println("----------------------------");
-        System.out.println(String.format(
-                "Coordinates: lat = %1$.4f, lon = %2$.4f, time = %3$tF %3$tT",
+        String lat = String.format("%1$.4f",location.getLatitude());
+        String lon = String.format(String.format("%1$.4f",location.getLongitude()));
+        String date = String.format(String.format("%3$tF %3$tT",location.getTime()));
+        String provider;
+        if (location.getProvider().equals(LocationManager.GPS_PROVIDER)) provider = "GPS";
+        else if (location.getProvider().equals(LocationManager.NETWORK_PROVIDER)) provider = "NETWORK";
+        else provider = "OTHER";
+        sender.execute(lat,lon,date,provider);
+        System.out.println(String.format("Coordinates: lat = %1$.4f, lon = %2$.4f, time = %3$tF %3$tT",
                 location.getLatitude(), location.getLongitude(), new Date(
                         location.getTime())));
         return String.format(
@@ -175,5 +203,41 @@ public class ServiceGps extends Service {
 
     private void checkEnabled() {
 
+    }
+
+    //асинхронный класс, для отправки единичного пакета
+    class SendOnePackage extends AsyncTask<String, String, String> {
+
+        @Override
+        protected String doInBackground(String... params) {
+
+            try {
+                //создаем запрос на сервер
+                DefaultHttpClient hc = new DefaultHttpClient();
+                ResponseHandler<String> res = new BasicResponseHandler();
+                //он у нас будет посылать post запрос
+                HttpPost postMethod = new HttpPost(url);
+                //будем передавать два параметра
+                List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
+                //передаем параметры из наших текстбоксов
+                //лоигн
+                nameValuePairs.add(new BasicNameValuePair("login_id",String.format("%1$",login_id)));
+                nameValuePairs.add(new BasicNameValuePair("lat",params[0]));
+                nameValuePairs.add(new BasicNameValuePair("lon",params[1]));
+                nameValuePairs.add(new BasicNameValuePair("date",params[2]));
+                nameValuePairs.add(new BasicNameValuePair("provider",params[3]));
+                //пароль
+                //собераем их вместе и посылаем на сервер
+                postMethod.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+                //получаем ответ от сервера
+                String response = hc.execute(postMethod, res);
+
+                //посылаем на вторую активность полученные параметры
+
+            } catch (Exception e) {
+                System.out.println("Exp=" + e);
+            }
+            return null;
+        }
     }
 }

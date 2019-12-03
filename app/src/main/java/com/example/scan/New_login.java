@@ -80,6 +80,7 @@ public class New_login extends Activity {
                         sPref = getSharedPreferences("prefs",MODE_PRIVATE);
                         SharedPreferences.Editor ed = sPref.edit();
                         ed.putInt("login_id",num);
+                        ed.putString("login_name",params[0]);
                         ed.apply();
                         finish();
                     }

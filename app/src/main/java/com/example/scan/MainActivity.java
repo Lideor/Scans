@@ -45,12 +45,14 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
     int login_id = -1;//логин пользователя
     SharedPreferences sPref;// файл с настройками
+
     String url = "http://www.zaural-vodokanal.ru/php/get_pos.php"; // отправка локации
     final int REQUEST_CODE_ACCESS_FINE_LOCATION = 200; // код ддя проверки разрешения на
     TextView MainText; // бокс основного текста
     private LocationManager locationManager;// локация
-    Context Ctn = this;
+    Context Ctn = this;//контекст
     Location location;
+    //отладка
     final String LOG_TAG = "myLogs";
 
     @Override
@@ -63,36 +65,14 @@ public class MainActivity extends AppCompatActivity {
 
             startActivity(intent);
         }
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        int permissionStatus = ContextCompat.checkSelfPermission(Ctn, Manifest.permission.ACCESS_FINE_LOCATION);
+        if(permissionStatus != PackageManager.PERMISSION_GRANTED) ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.READ_CONTACTS},
+                REQUEST_CODE_ACCESS_FINE_LOCATION);
+        // locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         Log.d(LOG_TAG, "onStartCommand");
         startService(new Intent(this, ServiceGps.class));
-
-       /* int permissionStatus = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
-
-        if (permissionStatus == PackageManager.PERMISSION_GRANTED) {
-
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                    1000 * 1, 10, locationListener);
-        } else {
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION},
-                    REQUEST_CODE_ACCESS_FINE_LOCATION);
-
-        }*/
-
     }
 
-    void StartLocation(){
-        int permissionStatus = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
-
-        if (permissionStatus == PackageManager.PERMISSION_GRANTED) {
-
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                    1000 * 1, 10, locationListener);
-        } else {
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION},
-                    REQUEST_CODE_ACCESS_FINE_LOCATION);
-        }
-    }
     @Override
     protected void onResume() {
         super.onResume();
@@ -108,7 +88,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        new RequestTask().execute("");
     }
     //работа с разрешениями
 
