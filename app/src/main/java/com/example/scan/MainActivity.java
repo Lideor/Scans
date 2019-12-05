@@ -41,6 +41,7 @@ import android.location.LocationManager;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
     int login_id = -1;//логин пользователя
@@ -60,23 +61,35 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         MainText =(TextView) findViewById(R.id.MainText);
+        int permissionStatus = ContextCompat.checkSelfPermission(Ctn, Manifest.permission.ACCESS_FINE_LOCATION);
+        if(permissionStatus != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE_ACCESS_FINE_LOCATION);
+        }
+        // locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        Log.d(LOG_TAG, "onStartCommand");
         if (loadLogin_id() == 0) {
             Intent intent = new Intent(MainActivity.this, New_login.class);
 
             startActivity(intent);
         }
-        int permissionStatus = ContextCompat.checkSelfPermission(Ctn, Manifest.permission.ACCESS_FINE_LOCATION);
-        if(permissionStatus != PackageManager.PERMISSION_GRANTED) ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.READ_CONTACTS},
-                REQUEST_CODE_ACCESS_FINE_LOCATION);
-        // locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        Log.d(LOG_TAG, "onStartCommand");
-        startService(new Intent(this, ServiceGps.class));
+        else startService(new Intent(this, ServiceGps.class));
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        int permissionStatus = ContextCompat.checkSelfPermission(Ctn, Manifest.permission.ACCESS_FINE_LOCATION);
 
+        if(permissionStatus != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE_ACCESS_FINE_LOCATION);
+        }
+        if (loadLogin_id() == 0) {
+            Intent intent = new Intent(MainActivity.this, New_login.class);
+
+            startActivity(intent);
+        }
+        else startService(new Intent(this, ServiceGps.class));
 
 
     }
@@ -98,9 +111,7 @@ public class MainActivity extends AppCompatActivity {
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // permission granted
-                    ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
-                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                            1000 * 10, 10, locationListener);
+
                 } else {
                     // permission denied
                 }
@@ -109,12 +120,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //получение гпс2
+
     private LocationListener locationListener = new LocationListener() {
 
         @Override
         public void onLocationChanged(Location loc) {
-            location=loc;
-            showLocation(location);
+            showLocation(loc);
         }
 
         @Override
@@ -127,14 +138,16 @@ public class MainActivity extends AppCompatActivity {
             checkEnabled();
             int permissionStatus = ContextCompat.checkSelfPermission(Ctn, Manifest.permission.ACCESS_FINE_LOCATION);
             showLocation(locationManager.getLastKnownLocation(provider));
+            //           lastPos = locationManager.getLastKnownLocation(provider);
         }
 
         @Override
         public void onStatusChanged(String provider, int status, Bundle extras) {
+            Log.d(LOG_TAG, "off");
             if (provider.equals(LocationManager.GPS_PROVIDER)) {
                 //MainText.setText("Status: " + String.valueOf(status));
             } else if (provider.equals(LocationManager.NETWORK_PROVIDER)) {
-             //   MainText.setText("Status: " + String.valueOf(status));
+                //   MainText.setText("Status: " + String.valueOf(status));
             }
         }
     };
@@ -143,10 +156,11 @@ public class MainActivity extends AppCompatActivity {
         if (location == null)
             return;
         if (location.getProvider().equals(LocationManager.GPS_PROVIDER)) {
-            MainText.setText(formatLocation(location));
+            Log.d(LOG_TAG,formatLocation(location));
+
         } else if (location.getProvider().equals(
                 LocationManager.NETWORK_PROVIDER)) {
-            MainText.setText(formatLocation(location));
+            Log.d(LOG_TAG,formatLocation(location));
         }
     }
 
@@ -154,8 +168,15 @@ public class MainActivity extends AppCompatActivity {
         if (location == null)
             return "";
         System.out.println("----------------------------");
-        System.out.println(String.format(
-                "Coordinates: lat = %1$.4f, lon = %2$.4f, time = %3$tF %3$tT",
+        String lat = String.format(Locale.ENGLISH,"%1$.4f",location.getLatitude());
+        String lon = String.format(Locale.ENGLISH,"%1$.4f",location.getLongitude());
+        String date = String.format(String.format("%1$tF %1$tT",location.getTime()));
+        String provider="23";
+        if (location.getProvider().equals(LocationManager.GPS_PROVIDER)) provider = "GPS";
+        else if (location.getProvider().equals(LocationManager.NETWORK_PROVIDER)) provider = "NETWORK";
+        else provider = "OTHER";
+        Log.d(LOG_TAG,provider);
+        System.out.println(String.format("Coordinat: lat = %1$.4f, lon = %2$.4f, time = %3$tF %3$tT",
                 location.getLatitude(), location.getLongitude(), new Date(
                         location.getTime())));
         return String.format(
@@ -165,12 +186,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkEnabled() {
-        MainText.setText("Enabled: "
-                + locationManager
-                .isProviderEnabled(LocationManager.GPS_PROVIDER));
-        MainText.setText("Enabled: "
-                + locationManager
-                .isProviderEnabled(LocationManager.NETWORK_PROVIDER));
+
     }
 
     public void onClickLocationSettings(View view) {
@@ -215,57 +231,4 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    class RequestTask extends AsyncTask<String, String, String> {
-
-        @Override
-        protected String doInBackground(String... params) {
-
-            try {
-               /* //создаем запрос на сервер
-                DefaultHttpClient hc = new DefaultHttpClient();
-                ResponseHandler<String> res = new BasicResponseHandler();
-                //он у нас будет посылать post запрос
-                HttpPost postMethod = new HttpPost(url);
-                //будем передавать два параметра
-                List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
-                //передаем параметры из наших текстбоксов
-                //лоигн
-                nameValuePairs.add(new BasicNameValuePair("login_name", params[0]));
-                //пароль
-                //собераем их вместе и посылаем на сервер
-                postMethod.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-                //получаем ответ от сервера
-                String response = hc.execute(postMethod, res);
-                if (response != "not") {
-                    int num = Integer.parseInt(response);
-                    sPref = getPreferences(MODE_PRIVATE);
-                    SharedPreferences.Editor ed = sPref.edit();
-                    ed.putInt("login_id", num);
-                    ed.apply();
-                    finish();
-                }
-                //посылаем на вторую активность полученные параметры
-                */
-
-                int permissionStatus = ContextCompat.checkSelfPermission(Ctn, Manifest.permission.ACCESS_FINE_LOCATION);
-
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                        1000 * 1, 10, locationListener);
-
-               int i=0;
-               while (i!=-1) {
-                   location.getLatitude();
-                   System.out.print("---------------------");
-                   System.out.print(location.getLatitude());
-                   System.out.println(i);
-                    i++;
-                    Thread.sleep(3000);
-                   }
-               } catch (Exception e) {
-                System.out.println("Exp=" + e);
-            }
-            return null;
-        }
-
-    }
 }

@@ -44,6 +44,7 @@ import org.apache.http.message.BasicNameValuePair;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 public class ServiceGps extends Service {
@@ -53,8 +54,9 @@ public class ServiceGps extends Service {
     public static final String CHANNEL_ID = "ForegroundServiceChannel";
 
     //работа с инетом
+    private int off=0;
     private String url = "http://www.zaural-vodokanal.ru/php/get_pos.php"; // отправка локации
-    private SendOnePackage sender = new SendOnePackage(); // класс единичной отправки пакета
+    private SendOnePackage sender; // класс единичной отправки пакета
 
     //настройки на телефоне
     private int login_id = -1;//айдишник пользователя
@@ -63,9 +65,10 @@ public class ServiceGps extends Service {
     //отладка
     final String LOG_TAG = "myLogs";//тег консоли
 
-
-    private LocationManager locationManager;// локация
+    //работа с gps
+    private LocationManager locationManager;// слушатель
     Context Ctn = this;// текущий контент, нужен для получения списка разрешений
+    private Location lastPos;
 
     Handler mHandler = new Handler();
 
@@ -76,10 +79,14 @@ public class ServiceGps extends Service {
         int permissionStatus = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
 
         if (permissionStatus == PackageManager.PERMISSION_GRANTED) {
-
+            int permissonStatus =1;
+            float kakogo = 5.5F;
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,5000 * 1,5.5F, locationListener);
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                    1000 * 1, 10, locationListener);
+                    5000 * 1,5.5F, locationListener);
+
         }
+
     }
 
     private int loadSaveId(){
@@ -120,7 +127,9 @@ public class ServiceGps extends Service {
                     .build();
 
             startForeground(1, notification);
+
         }
+
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -157,10 +166,12 @@ public class ServiceGps extends Service {
             checkEnabled();
             int permissionStatus = ContextCompat.checkSelfPermission(Ctn, Manifest.permission.ACCESS_FINE_LOCATION);
             showLocation(locationManager.getLastKnownLocation(provider));
+ //           lastPos = locationManager.getLastKnownLocation(provider);
         }
 
         @Override
         public void onStatusChanged(String provider, int status, Bundle extras) {
+            Log.d(LOG_TAG, "off");
             if (provider.equals(LocationManager.GPS_PROVIDER)) {
                 //MainText.setText("Status: " + String.valueOf(status));
             } else if (provider.equals(LocationManager.NETWORK_PROVIDER)) {
@@ -172,8 +183,10 @@ public class ServiceGps extends Service {
     private void showLocation(Location location) {
         if (location == null)
             return;
+        lastPos = location;
         if (location.getProvider().equals(LocationManager.GPS_PROVIDER)) {
             Log.d(LOG_TAG,formatLocation(location));
+
         } else if (location.getProvider().equals(
                 LocationManager.NETWORK_PROVIDER)) {
             Log.d(LOG_TAG,formatLocation(location));
@@ -184,13 +197,14 @@ public class ServiceGps extends Service {
         if (location == null)
             return "";
         System.out.println("----------------------------");
-        String lat = String.format("%1$.4f",location.getLatitude());
-        String lon = String.format(String.format("%1$.4f",location.getLongitude()));
-        String date = String.format(String.format("%3$tF %3$tT",location.getTime()));
-        String provider;
+        String lat = String.format(Locale.ENGLISH,"%1$.4f",location.getLatitude());
+        String lon = String.format(Locale.ENGLISH,"%1$.4f",location.getLongitude());
+        String date = String.format(String.format("%1$tF %1$tT",location.getTime()));
+        String provider="23";
         if (location.getProvider().equals(LocationManager.GPS_PROVIDER)) provider = "GPS";
         else if (location.getProvider().equals(LocationManager.NETWORK_PROVIDER)) provider = "NETWORK";
         else provider = "OTHER";
+        sender = new SendOnePackage();
         sender.execute(lat,lon,date,provider);
         System.out.println(String.format("Coordinates: lat = %1$.4f, lon = %2$.4f, time = %3$tF %3$tT",
                 location.getLatitude(), location.getLongitude(), new Date(
@@ -221,7 +235,7 @@ public class ServiceGps extends Service {
                 List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
                 //передаем параметры из наших текстбоксов
                 //лоигн
-                nameValuePairs.add(new BasicNameValuePair("login_id",String.format("%1$",login_id)));
+                nameValuePairs.add(new BasicNameValuePair("login_id",Integer.toString(login_id)));
                 nameValuePairs.add(new BasicNameValuePair("lat",params[0]));
                 nameValuePairs.add(new BasicNameValuePair("lon",params[1]));
                 nameValuePairs.add(new BasicNameValuePair("date",params[2]));
@@ -231,7 +245,8 @@ public class ServiceGps extends Service {
                 postMethod.setEntity(new UrlEncodedFormEntity(nameValuePairs));
                 //получаем ответ от сервера
                 String response = hc.execute(postMethod, res);
-
+                Log.d(LOG_TAG,response);
+                if(response!="1");
                 //посылаем на вторую активность полученные параметры
 
             } catch (Exception e) {
@@ -240,4 +255,7 @@ public class ServiceGps extends Service {
             return null;
         }
     }
+
+    //асинхронный класс, для отправки единичного пакета
+
 }
