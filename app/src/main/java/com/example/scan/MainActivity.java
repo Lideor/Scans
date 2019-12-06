@@ -74,6 +74,8 @@ public class MainActivity extends AppCompatActivity {
         }
         else startService(new Intent(this, ServiceGps.class));
 
+
+
     }
 
     @Override

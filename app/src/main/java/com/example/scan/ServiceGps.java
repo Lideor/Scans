@@ -8,6 +8,8 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -70,14 +72,19 @@ public class ServiceGps extends Service {
     Context Ctn = this;// текущий контент, нужен для получения списка разрешений
     private Location lastPos;
 
+    //сохранение пакетов если отключен интернет
+    private List<SaveOnePackage> allPackage;
+    private JsonParse parseJson;
+
     Handler mHandler = new Handler();
 
     public void onCreate() {
         super.onCreate();
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        Log.d(LOG_TAG, "StartServics");
-        int permissionStatus = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
 
+        Log.d(LOG_TAG, "StartServics");
+
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        int permissionStatus = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
         if (permissionStatus == PackageManager.PERMISSION_GRANTED) {
             int permissonStatus =1;
             float kakogo = 5.5F;
@@ -87,6 +94,8 @@ public class ServiceGps extends Service {
 
         }
 
+        allPackage = new ArrayList<>();
+        parseJson = new JsonParse();
     }
 
     private int loadSaveId(){
@@ -204,8 +213,20 @@ public class ServiceGps extends Service {
         if (location.getProvider().equals(LocationManager.GPS_PROVIDER)) provider = "GPS";
         else if (location.getProvider().equals(LocationManager.NETWORK_PROVIDER)) provider = "NETWORK";
         else provider = "OTHER";
-        sender = new SendOnePackage();
-        sender.execute(lat,lon,date,provider);
+        if(isOnline()) {
+
+            sender = new SendOnePackage();
+            sender.execute(lat, lon, date, provider);
+        }
+        else{
+
+            Log.d(LOG_TAG,"error 1");
+
+            allPackage.add(new SaveOnePackage(location));
+
+            parseJson.exportJsonInFile(allPackage,Ctn);
+            parseJson.importJsonInFile(Ctn);
+        }
         System.out.println(String.format("Coordinates: lat = %1$.4f, lon = %2$.4f, time = %3$tF %3$tT",
                 location.getLatitude(), location.getLongitude(), new Date(
                         location.getTime())));
@@ -246,16 +267,28 @@ public class ServiceGps extends Service {
                 //получаем ответ от сервера
                 String response = hc.execute(postMethod, res);
                 Log.d(LOG_TAG,response);
-                if(response!="1");
+                if(response!="1") Log.d(LOG_TAG,"error 1");
+
                 //посылаем на вторую активность полученные параметры
 
             } catch (Exception e) {
-                System.out.println("Exp=" + e);
+                Log.d(LOG_TAG,"Exp=" + e);
             }
             return null;
         }
     }
 
-    //асинхронный класс, для отправки единичного пакета
+    //проверка наличия интернет соединения
+    protected boolean isOnline() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        if (netInfo != null && netInfo.isConnected()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
 
 }
