@@ -1,6 +1,7 @@
 package com.example.scan;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -57,8 +58,11 @@ public class ServiceGps extends Service {
 
     //работа с инетом
     private int off=0;
-    private String url = "http://www.zaural-vodokanal.ru/php/get_pos.php"; // отправка локации
-    private SendOnePackage sender; // класс единичной отправки пакета
+    private String urlOne = "http://www.zaural-vodokanal.ru/php/get_pos.php"; // отправка одного пакета локации
+    private String urlRem = "http://www.zaural-vodokanal.ru/php/get_pos_rem.php"; // отправка одного пакета локации
+
+    private SendOnePackage sender;// класс единичной отправки пакета
+  //  private SendRemPackage senderRem; // класс отправки остаточных пакета
 
     //настройки на телефоне
     private int login_id = -1;//айдишник пользователя
@@ -98,6 +102,7 @@ public class ServiceGps extends Service {
         parseJson = new JsonParse();
     }
 
+    //получепния айди пользователя
     private int loadSaveId(){
         sPref = getSharedPreferences("prefs",MODE_PRIVATE);
         login_id = sPref.getInt("login_id", -1);
@@ -189,27 +194,14 @@ public class ServiceGps extends Service {
         }
     };
 
+    // отправка пакетов
     private void showLocation(Location location) {
-        if (location == null)
-            return;
-        lastPos = location;
-        if (location.getProvider().equals(LocationManager.GPS_PROVIDER)) {
-            Log.d(LOG_TAG,formatLocation(location));
 
-        } else if (location.getProvider().equals(
-                LocationManager.NETWORK_PROVIDER)) {
-            Log.d(LOG_TAG,formatLocation(location));
-        }
-    }
-
-    private String formatLocation(Location location) {
-        if (location == null)
-            return "";
-        System.out.println("----------------------------");
         String lat = String.format(Locale.ENGLISH,"%1$.4f",location.getLatitude());
         String lon = String.format(Locale.ENGLISH,"%1$.4f",location.getLongitude());
         String date = String.format(String.format("%1$tF %1$tT",location.getTime()));
-        String provider="23";
+        String provider;
+
         if (location.getProvider().equals(LocationManager.GPS_PROVIDER)) provider = "GPS";
         else if (location.getProvider().equals(LocationManager.NETWORK_PROVIDER)) provider = "NETWORK";
         else provider = "OTHER";
@@ -217,27 +209,40 @@ public class ServiceGps extends Service {
 
             sender = new SendOnePackage();
             sender.execute(lat, lon, date, provider);
+            try {
+                sender.get();
+            } catch (Exception e) {
+                Log.d(LOG_TAG,"Exp=" + e);
+            }
         }
         else{
 
             Log.d(LOG_TAG,"error 1");
-
             allPackage.add(new SaveOnePackage(location));
-
-            parseJson.exportJsonInFile(allPackage,Ctn);
-            parseJson.importJsonInFile(Ctn);
+            if(parseJson.exportJsonInFile(allPackage,Ctn)) setCountPackage();
         }
-        System.out.println(String.format("Coordinates: lat = %1$.4f, lon = %2$.4f, time = %3$tF %3$tT",
-                location.getLatitude(), location.getLongitude(), new Date(
-                        location.getTime())));
-        return String.format(
-                "Coordinates: lat = %1$.4f, lon = %2$.4f, time = %3$tF %3$tT",
-                location.getLatitude(), location.getLongitude(), new Date(
-                        location.getTime()));
     }
 
     private void checkEnabled() {
 
+    }
+
+    //работа с колличеством пакетов в памяти
+    private void setCountPackage(){
+        sPref = getSharedPreferences("prefs",MODE_PRIVATE);
+        SharedPreferences.Editor ed = sPref.edit();
+        ed.putInt("package",sPref.getInt("package", 0)+1);
+        ed.apply();
+    }
+    private int getCountPackage(){
+         sPref = getSharedPreferences("prefs",MODE_PRIVATE);
+         return sPref.getInt("package", 0);
+     }
+    private void deleteCountPackage(){
+        sPref = getSharedPreferences("prefs",MODE_PRIVATE);
+        SharedPreferences.Editor ed = sPref.edit();
+        ed.putInt("package",0);
+        ed.apply();
     }
 
     //асинхронный класс, для отправки единичного пакета
@@ -251,7 +256,7 @@ public class ServiceGps extends Service {
                 DefaultHttpClient hc = new DefaultHttpClient();
                 ResponseHandler<String> res = new BasicResponseHandler();
                 //он у нас будет посылать post запрос
-                HttpPost postMethod = new HttpPost(url);
+                HttpPost postMethod = new HttpPost(urlOne);
                 //будем передавать два параметра
                 List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
                 //передаем параметры из наших текстбоксов
@@ -268,13 +273,30 @@ public class ServiceGps extends Service {
                 String response = hc.execute(postMethod, res);
                 Log.d(LOG_TAG,response);
                 if(response!="1") Log.d(LOG_TAG,"error 1");
-
+                if(getCountPackage()!=0){
+                    postMethod = new HttpPost(urlRem);
+                    nameValuePairs = new ArrayList<NameValuePair>(1);
                 //посылаем на вторую активность полученные параметры
+                    nameValuePairs.add(new BasicNameValuePair("login_id",Integer.toString(login_id)));
+                    nameValuePairs.add(new BasicNameValuePair("count",String.format(Locale.ENGLISH,"1",getCountPackage())));
+                    nameValuePairs.add(new BasicNameValuePair("value",parseJson.importJsonInFile(Ctn)));
+                    postMethod.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+                    response = hc.execute(postMethod, res);
+                    Log.d(LOG_TAG,response);
+                   // if(!response.equals("1")) Log.d(LOG_TAG,"yyyyyyyyyyy");
+                    if(!response.equals("1")) Log.d(LOG_TAG,"error 1");
+                    else{
 
+                        parseJson.deleteFile(Ctn);
+                        deleteCountPackage();
+                    }
+                }
             } catch (Exception e) {
                 Log.d(LOG_TAG,"Exp=" + e);
             }
-            return null;
+
+
+            return "123";
         }
     }
 

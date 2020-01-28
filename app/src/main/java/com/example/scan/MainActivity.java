@@ -48,7 +48,10 @@ public class MainActivity extends AppCompatActivity {
     SharedPreferences sPref;// файл с настройками
 
     String url = "http://www.zaural-vodokanal.ru/php/get_pos.php"; // отправка локации
-    final int REQUEST_CODE_ACCESS_FINE_LOCATION = 200; // код ддя проверки разрешения на
+    final int REQUEST_CODE_ACCESS_FINE_LOCATION = 200; // код ддя проверки разрешения на геолокаццию
+    final int REQUEST_WRITE_EXTERNAL_STORAGE = 300; // код ддя проверки разрешения на запись
+    final int REQUEST_READ_EXTERNAL_STORAGE = 400; // код ддя проверки разрешения на запись файла
+
     TextView MainText; // бокс основного текста
     private LocationManager locationManager;// локация
     Context Ctn = this;//контекст
@@ -65,7 +68,14 @@ public class MainActivity extends AppCompatActivity {
         if(permissionStatus != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE_ACCESS_FINE_LOCATION);
         }
-        // locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        permissionStatus = ContextCompat.checkSelfPermission(Ctn, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if(permissionStatus != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_EXTERNAL_STORAGE);
+        }
+        permissionStatus = ContextCompat.checkSelfPermission(Ctn, Manifest.permission.READ_EXTERNAL_STORAGE);
+        if(permissionStatus != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_READ_EXTERNAL_STORAGE);
+        }
         Log.d(LOG_TAG, "onStartCommand");
         if (loadLogin_id() == 0) {
             Intent intent = new Intent(MainActivity.this, New_login.class);
@@ -73,7 +83,6 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         }
         else startService(new Intent(this, ServiceGps.class));
-
 
 
     }
@@ -104,12 +113,29 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
     }
-    //работа с разрешениями
 
+    //работа с разрешениями
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
             case REQUEST_CODE_ACCESS_FINE_LOCATION:
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // permission granted
+
+                } else {
+                    // permission denied
+                }
+
+            case REQUEST_WRITE_EXTERNAL_STORAGE:
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // permission granted
+
+                } else {
+                    // permission denied
+                }
+            case REQUEST_READ_EXTERNAL_STORAGE:
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // permission granted
@@ -122,7 +148,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //получение гпс2
-
     private LocationListener locationListener = new LocationListener() {
 
         @Override

@@ -84,7 +84,6 @@ public class New_login extends Activity {
                         ed.apply();
                         finish();
                     }
-                    //посылаем на вторую активность полученные параметры
 
                 } catch (Exception e) {
                     System.out.println("Exp=" + e);
