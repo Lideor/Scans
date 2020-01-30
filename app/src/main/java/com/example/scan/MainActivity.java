@@ -1,5 +1,6 @@
 package com.example.scan;
 import android.Manifest;
+import android.app.PendingIntent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 
@@ -22,6 +23,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 // работа с инетом
@@ -51,19 +53,37 @@ public class MainActivity extends AppCompatActivity {
     final int REQUEST_CODE_ACCESS_FINE_LOCATION = 200; // код ддя проверки разрешения на геолокаццию
     final int REQUEST_WRITE_EXTERNAL_STORAGE = 300; // код ддя проверки разрешения на запись
     final int REQUEST_READ_EXTERNAL_STORAGE = 400; // код ддя проверки разрешения на запись файла
+    final int REQUEST_RECEIVE_BOOT_COMPLETED = 500;
 
     TextView MainText; // бокс основного текста
     private LocationManager locationManager;// локация
     Context Ctn = this;//контекст
-    Location location;
+    private int flag = 0;
+    public static String STARTFOREGROUND_STOP = "Stop";
     //отладка
     final String LOG_TAG = "myLogs";
+    Button btnReg; //кнопнка регестрации
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         MainText =(TextView) findViewById(R.id.MainText);
+        btnReg = (Button) findViewById(R.id.Start);
+        btnReg.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent stopIntent = new Intent(MainActivity.this, ServiceGps.class);
+                stopIntent.setAction(STARTFOREGROUND_STOP);
+                startService(stopIntent);
+            }
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(LOG_TAG, "onReturnMain");
         int permissionStatus = ContextCompat.checkSelfPermission(Ctn, Manifest.permission.ACCESS_FINE_LOCATION);
         if(permissionStatus != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE_ACCESS_FINE_LOCATION);
@@ -72,35 +92,23 @@ public class MainActivity extends AppCompatActivity {
         if(permissionStatus != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_EXTERNAL_STORAGE);
         }
-        permissionStatus = ContextCompat.checkSelfPermission(Ctn, Manifest.permission.READ_EXTERNAL_STORAGE);
+        permissionStatus = ContextCompat.checkSelfPermission(Ctn, Manifest.permission.RECEIVE_BOOT_COMPLETED);
         if(permissionStatus != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_READ_EXTERNAL_STORAGE);
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.RECEIVE_BOOT_COMPLETED}, REQUEST_RECEIVE_BOOT_COMPLETED);
         }
+
         Log.d(LOG_TAG, "onStartCommand");
         if (loadLogin_id() == 0) {
-            Intent intent = new Intent(MainActivity.this, New_login.class);
-
-            startActivity(intent);
+            Intent stopIntent = new Intent(MainActivity.this, New_login.class);
+            startActivity(stopIntent);
         }
-        else startService(new Intent(this, ServiceGps.class));
+        else{
+            Intent stopIntent = new Intent(MainActivity.this, ServiceGps.class);
+            stopIntent.setAction("START");
+            startService(stopIntent);
+            flag=1;
 
-
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        int permissionStatus = ContextCompat.checkSelfPermission(Ctn, Manifest.permission.ACCESS_FINE_LOCATION);
-
-        if(permissionStatus != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE_ACCESS_FINE_LOCATION);
         }
-        if (loadLogin_id() == 0) {
-            Intent intent = new Intent(MainActivity.this, New_login.class);
-
-            startActivity(intent);
-        }
-        else startService(new Intent(this, ServiceGps.class));
 
 
     }
@@ -148,73 +156,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //получение гпс2
-    private LocationListener locationListener = new LocationListener() {
-
-        @Override
-        public void onLocationChanged(Location loc) {
-            showLocation(loc);
-        }
-
-        @Override
-        public void onProviderDisabled(String provider) {
-            checkEnabled();
-        }
-
-        @Override
-        public void onProviderEnabled(String provider) {
-            checkEnabled();
-            int permissionStatus = ContextCompat.checkSelfPermission(Ctn, Manifest.permission.ACCESS_FINE_LOCATION);
-            showLocation(locationManager.getLastKnownLocation(provider));
-            //           lastPos = locationManager.getLastKnownLocation(provider);
-        }
-
-        @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {
-            Log.d(LOG_TAG, "off");
-            if (provider.equals(LocationManager.GPS_PROVIDER)) {
-                //MainText.setText("Status: " + String.valueOf(status));
-            } else if (provider.equals(LocationManager.NETWORK_PROVIDER)) {
-                //   MainText.setText("Status: " + String.valueOf(status));
-            }
-        }
-    };
-
-    private void showLocation(Location location) {
-        if (location == null)
-            return;
-        if (location.getProvider().equals(LocationManager.GPS_PROVIDER)) {
-            Log.d(LOG_TAG,formatLocation(location));
-
-        } else if (location.getProvider().equals(
-                LocationManager.NETWORK_PROVIDER)) {
-            Log.d(LOG_TAG,formatLocation(location));
-        }
-    }
-
-    private String formatLocation(Location location) {
-        if (location == null)
-            return "";
-        System.out.println("----------------------------");
-        String lat = String.format(Locale.ENGLISH,"%1$.4f",location.getLatitude());
-        String lon = String.format(Locale.ENGLISH,"%1$.4f",location.getLongitude());
-        String date = String.format(String.format("%1$tF %1$tT",location.getTime()));
-        String provider="23";
-        if (location.getProvider().equals(LocationManager.GPS_PROVIDER)) provider = "GPS";
-        else if (location.getProvider().equals(LocationManager.NETWORK_PROVIDER)) provider = "NETWORK";
-        else provider = "OTHER";
-        Log.d(LOG_TAG,provider);
-        System.out.println(String.format("Coordinat: lat = %1$.4f, lon = %2$.4f, time = %3$tF %3$tT",
-                location.getLatitude(), location.getLongitude(), new Date(
-                        location.getTime())));
-        return String.format(
-                "Coordinates: lat = %1$.4f, lon = %2$.4f, time = %3$tF %3$tT",
-                location.getLatitude(), location.getLongitude(), new Date(
-                        location.getTime()));
-    }
-
-    private void checkEnabled() {
-
-    }
 
     public void onClickLocationSettings(View view) {
         startActivity(new Intent(

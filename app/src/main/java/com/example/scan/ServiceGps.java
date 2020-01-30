@@ -57,12 +57,12 @@ public class ServiceGps extends Service {
     public static final String CHANNEL_ID = "ForegroundServiceChannel";
 
     //работа с инетом
-    private int off=0;
+    private int fl=0;
     private String urlOne = "http://www.zaural-vodokanal.ru/php/get_pos.php"; // отправка одного пакета локации
     private String urlRem = "http://www.zaural-vodokanal.ru/php/get_pos_rem.php"; // отправка одного пакета локации
 
     private SendOnePackage sender;// класс единичной отправки пакета
-  //  private SendRemPackage senderRem; // класс отправки остаточных пакета
+    //private SendRemPackage senderRem; // класс отправки остаточных пакета
 
     //настройки на телефоне
     private int login_id = -1;//айдишник пользователя
@@ -82,6 +82,9 @@ public class ServiceGps extends Service {
 
     Handler mHandler = new Handler();
 
+    //уууу сука
+    public static String STARTFOREGROUND_ACTION = "Stop";
+
     public void onCreate() {
         super.onCreate();
 
@@ -92,9 +95,8 @@ public class ServiceGps extends Service {
         if (permissionStatus == PackageManager.PERMISSION_GRANTED) {
             int permissonStatus =1;
             float kakogo = 5.5F;
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,5000 * 1,5.5F, locationListener);
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                    5000 * 1,5.5F, locationListener);
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,5000 * 1,0, locationListener);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,5000 * 1,5.5F, locationListener);
 
         }
 
@@ -112,44 +114,67 @@ public class ServiceGps extends Service {
     }
 
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(LOG_TAG, "tut");
+        Log.d(LOG_TAG, "tut1");
 
-        if(loadSaveId()==1) {
-            NotificationManager notificationManager =
-                    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        if(fl!=1) {
+            Log.d(LOG_TAG, "tut");
+            if (loadSaveId() == 1) {
+                NotificationManager notificationManager =
+                        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "My channel",
-                        NotificationManager.IMPORTANCE_HIGH);
-                channel.setDescription("My channel description");
-                channel.enableLights(true);
-                channel.setLightColor(Color.RED);
-                channel.enableVibration(false);
-                notificationManager.createNotificationChannel(channel);
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "My channel",
+                            NotificationManager.IMPORTANCE_HIGH);
+                    channel.setDescription("My channel description");
+                    channel.enableLights(true);
+                    channel.setLightColor(Color.RED);
+                    channel.enableVibration(false);
+                    notificationManager.createNotificationChannel(channel);
+                }
+
+                Intent notificationIntent = new Intent(ServiceGps.this, ServiceGps.class);
+
+                PendingIntent pendingIntent = PendingIntent.getActivity(ServiceGps.this, 0,
+                        notificationIntent, 0);
+
+                PendingIntent closeIntent = PendingIntent.getActivity(ServiceGps.this, 0,
+                        notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+
+
+                Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                        .setContentTitle("Я лисичка")
+                        .setContentText("Фыр фыр фыр")
+                        .setSmallIcon(R.drawable.ic_launcher_background)
+                        .setContentIntent(pendingIntent)
+                        .setOngoing(true)
+                        .addAction(R.drawable.ic_launcher_background, "Другой вариант", closeIntent)
+                        .build();
+
+                startForeground(1, notification);
+
             }
-
-            Intent notificationIntent = new Intent(this, MainActivity.class);
-
-            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
-                    notificationIntent, 0);
-
-            Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                    .setContentTitle("Я лисичка")
-                    .setContentText("Фыр фыр фыр")
-                    .setSmallIcon(R.drawable.ic_launcher_background)
-                    .setContentIntent(pendingIntent)
-                    .build();
-
-            startForeground(1, notification);
-
+            fl=1;
+        }
+        try {
+            if(intent.getAction().equals(STARTFOREGROUND_ACTION)){
+                Log.d(LOG_TAG, "tut2");
+                stopCommand();
+            }
         }
 
-        return super.onStartCommand(intent, flags, startId);
+        catch (Exception e) {
+            Log.d(LOG_TAG,"Exp=" + e);
+        }
+        return START_NOT_STICKY;
     }
 
     private void stopCommand(){
         stopForeground(true);
         stopSelf();
+    }
+
+    public void onStop() {
+        Log.d(LOG_TAG, "onDestroy");
     }
 
     public void onDestroy() {
@@ -209,10 +234,20 @@ public class ServiceGps extends Service {
 
             sender = new SendOnePackage();
             sender.execute(lat, lon, date, provider);
+            int buf = 1;
             try {
                 sender.get();
+                int flag =sender.get();
+                if (sender.get()!= 1) buf=0;
             } catch (Exception e) {
                 Log.d(LOG_TAG,"Exp=" + e);
+                buf = 1;
+            }
+            if (buf==1){
+
+                Log.d(LOG_TAG,"error 1");
+                allPackage.add(new SaveOnePackage(location));
+                if(parseJson.exportJsonInFile(allPackage,Ctn)) setCountPackage();
             }
         }
         else{
@@ -246,10 +281,10 @@ public class ServiceGps extends Service {
     }
 
     //асинхронный класс, для отправки единичного пакета
-    class SendOnePackage extends AsyncTask<String, String, String> {
+    class SendOnePackage extends AsyncTask<String, String, Integer> {
 
         @Override
-        protected String doInBackground(String... params) {
+        protected Integer doInBackground(String... params) {
 
             try {
                 //создаем запрос на сервер
@@ -272,7 +307,13 @@ public class ServiceGps extends Service {
                 //получаем ответ от сервера
                 String response = hc.execute(postMethod, res);
                 Log.d(LOG_TAG,response);
-                if(response!="1") Log.d(LOG_TAG,"error 1");
+                Log.d(LOG_TAG,params[3]);
+                if(!response.equals("1")){
+
+                    Log.d(LOG_TAG,"error=11");
+                    return 1;
+                }
+
                 if(getCountPackage()!=0){
                     postMethod = new HttpPost(urlRem);
                     nameValuePairs = new ArrayList<NameValuePair>(1);
@@ -283,8 +324,9 @@ public class ServiceGps extends Service {
                     postMethod.setEntity(new UrlEncodedFormEntity(nameValuePairs));
                     response = hc.execute(postMethod, res);
                     Log.d(LOG_TAG,response);
+
                    // if(!response.equals("1")) Log.d(LOG_TAG,"yyyyyyyyyyy");
-                    if(!response.equals("1")) Log.d(LOG_TAG,"error 1");
+                    if(!response.equals("1")) Log.d(LOG_TAG,"error=12");
                     else{
 
                         parseJson.deleteFile(Ctn);
@@ -293,10 +335,12 @@ public class ServiceGps extends Service {
                 }
             } catch (Exception e) {
                 Log.d(LOG_TAG,"Exp=" + e);
+                Log.d(LOG_TAG,"error=11");
+                return 1;
             }
 
 
-            return "123";
+            return 0;
         }
     }
 

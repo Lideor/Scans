@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -26,15 +27,18 @@ public class New_login extends Activity {
     SharedPreferences sPref;//Настройка
     private MenuItem logoutMI;
     String url = "http://www.zaural-vodokanal.ru/php/auth.php";
-
+    final String LOG_TAG = "myLogs";
     Button btnReg; //кнопнка регестрации
     EditText loginName;
+    RequestTask log;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
 
         super.onCreate(savedInstanceState);
+        Log.d(LOG_TAG, "onStartlogin");
+
         setContentView(R.layout.new_login);
         btnReg = (Button) findViewById(R.id.btnReg);
         loginName = (EditText) findViewById(R.id.NewLogin);
@@ -44,7 +48,15 @@ public class New_login extends Activity {
                 System.out.print("asddddddddasdasddddddddd=");
                 if (loginName.getText().toString() != "") {
                     System.out.print("asdddddddddasdasd");
-                    new RequestTask().execute(loginName.getText().toString());
+                    log = new RequestTask();
+                    log.execute(loginName.getText().toString());
+                   try {
+                       log.get();
+                   }
+                   catch (Exception e) {
+                       Log.d(LOG_TAG,"Exp=" + e);
+                   }
+
                 } else {
                     System.out.print("asddddddddddddddddddddddddddddd=");
                     System.out.print(loginName.getText().toString());
