@@ -87,6 +87,12 @@ public class ServiceGps extends Service {
     //уууу сука
     public static String STARTFOREGROUND_ACTION = "Stop";
 
+    //расчет скорости
+    private double lastLon=0;
+    private double lastLat=0;
+    private double speed=0;
+    private double lastTime=0;
+
     public void onCreate() {
         super.onCreate();
 
