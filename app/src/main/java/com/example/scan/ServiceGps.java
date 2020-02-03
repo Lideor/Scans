@@ -61,6 +61,8 @@ public class ServiceGps extends Service {
     private String urlOne = "http://www.zaural-vodokanal.ru/php/get_pos.php"; // отправка одного пакета локации
     private String urlRem = "http://www.zaural-vodokanal.ru/php/get_pos_rem.php"; // отправка одного пакета локации
 
+    private static final int NOTIFY_ID = 101;
+
     private SendOnePackage sender;// класс единичной отправки пакета
     //private SendRemPackage senderRem; // класс отправки остаточных пакета
 

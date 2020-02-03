@@ -1,5 +1,7 @@
 package com.example.scan;
 import android.Manifest;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -11,6 +13,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 import android.content.Context;
 
@@ -45,6 +48,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import static androidx.core.app.NotificationCompat.PRIORITY_HIGH;
+import static com.example.scan.ServiceGps.CHANNEL_ID;
+
 public class MainActivity extends AppCompatActivity {
     int login_id = -1;//логин пользователя
     SharedPreferences sPref;// файл с настройками
@@ -54,6 +60,8 @@ public class MainActivity extends AppCompatActivity {
     final int REQUEST_WRITE_EXTERNAL_STORAGE = 300; // код ддя проверки разрешения на запись
     final int REQUEST_READ_EXTERNAL_STORAGE = 400; // код ддя проверки разрешения на запись файла
     final int REQUEST_RECEIVE_BOOT_COMPLETED = 500;
+
+    private static final int NOTIFY_ID = 101;
 
     TextView MainText; // бокс основного текста
     private LocationManager locationManager;// локация
@@ -78,6 +86,8 @@ public class MainActivity extends AppCompatActivity {
                 startService(stopIntent);
             }
         });
+
+
     }
 
     @Override
