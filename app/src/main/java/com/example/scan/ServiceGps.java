@@ -33,6 +33,9 @@ import android.os.IBinder;
 import android.os.Handler;
 
 import android.util.Log;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
 
@@ -60,7 +63,7 @@ public class ServiceGps extends Service {
     private int fl=0;
     private String urlOne = "http://www.zaural-vodokanal.ru/php/get_pos.php"; // отправка одного пакета локации
     private String urlRem = "http://www.zaural-vodokanal.ru/php/get_pos_rem.php"; // отправка одного пакета локации
-
+    Intent inten;
     private static final int NOTIFY_ID = 101;
 
     private SendOnePackage sender;// класс единичной отправки пакета
@@ -85,7 +88,9 @@ public class ServiceGps extends Service {
     Handler mHandler = new Handler();
 
     //уууу сука
+    Context ctn = this;
     public static String STARTFOREGROUND_ACTION = "Stop";
+    TextView MainText; // бокс основного текста
 
     //расчет скорости
     private double lastLon=0;
@@ -107,7 +112,6 @@ public class ServiceGps extends Service {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,5000 * 1,5.5F, locationListener);
 
         }
-
         allPackage = new ArrayList<>();
         parseJson = new JsonParse();
     }
@@ -123,6 +127,7 @@ public class ServiceGps extends Service {
 
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(LOG_TAG, "tut1");
+        inten = intent;
 
         if(fl!=1) {
             Log.d(LOG_TAG, "tut");
@@ -173,7 +178,7 @@ public class ServiceGps extends Service {
         catch (Exception e) {
             Log.d(LOG_TAG,"Exp=" + e);
         }
-        return START_NOT_STICKY;
+        return super.onStartCommand(intent, flags, startId);
     }
 
     private void stopCommand(){
@@ -235,9 +240,38 @@ public class ServiceGps extends Service {
         String date = String.format(String.format("%1$tF %1$tT",location.getTime()));
         String provider;
 
-        if (location.getProvider().equals(LocationManager.GPS_PROVIDER)) provider = "GPS";
-        else if (location.getProvider().equals(LocationManager.NETWORK_PROVIDER)) provider = "NETWORK";
+        String speed2 = String.format(Locale.ENGLISH,"%1$.4f",location.getSpeed());
+
+        int fl = 1;//отлдка
+
+        if (location.getProvider().equals(LocationManager.GPS_PROVIDER)) {
+            provider = "GPS";
+            fl = 1;
+        }
+        else if (location.getProvider().equals(LocationManager.NETWORK_PROVIDER)) {
+            provider = "NETWORK";
+            fl = 2;
+        }
         else provider = "OTHER";
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            String speed = String.format(Locale.ENGLISH,"%1$.4f",location.getSpeedAccuracyMetersPerSecond());
+            Log.d(LOG_TAG,speed+"-"+provider);
+
+        }
+
+        //отладка
+        Intent ServiceIntent = new Intent();
+        PendingIntent pi = inten.getParcelableExtra("probider");
+
+        try {
+            pi.send(ServiceGps.this,fl,new Intent().putExtra("speed",speed2));
+
+        }
+        catch (Exception e) {
+            Log.d(LOG_TAG,"Exp=" + e);
+        }
+
+        Log.d(LOG_TAG,speed2+"-"+provider);
         if(isOnline()) {
 
             sender = new SendOnePackage();

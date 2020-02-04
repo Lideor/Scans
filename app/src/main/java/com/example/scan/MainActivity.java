@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 
 //асинхрон
+import android.net.Network;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
@@ -42,6 +43,7 @@ import org.apache.http.message.BasicNameValuePair;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -64,6 +66,9 @@ public class MainActivity extends AppCompatActivity {
     private static final int NOTIFY_ID = 101;
 
     TextView MainText; // бокс основного текста
+
+    TextView Netw; // бокс основного текста
+
     private LocationManager locationManager;// локация
     Context Ctn = this;//контекст
     private int flag = 0;
@@ -77,6 +82,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         MainText =(TextView) findViewById(R.id.MainText);
+        Netw =(TextView) findViewById(R.id.Network);
+
         btnReg = (Button) findViewById(R.id.Start);
         btnReg.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -113,11 +120,21 @@ public class MainActivity extends AppCompatActivity {
             startActivity(stopIntent);
         }
         else{
-            Intent stopIntent = new Intent(MainActivity.this, ServiceGps.class);
-            stopIntent.setAction("START");
-            startService(stopIntent);
-            flag=1;
+            try {
 
+                Intent ServiceIntent = new Intent();
+                PendingIntent pi = createPendingResult(1, ServiceIntent, 0);
+                Intent stopIntent = new Intent(MainActivity.this, ServiceGps.class).putExtra("2", pi);
+
+
+                stopIntent.setAction("START");
+                startService(stopIntent);
+                flag = 1;
+            }
+            catch (Exception e) {
+                Log.d(LOG_TAG,"ExpMain=" + e);
+
+            }
         }
 
 
@@ -209,4 +226,26 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    //отлдка
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.d(LOG_TAG, "requestCode = " + requestCode + ", resultCode = "
+                + resultCode);
+
+        // Ловим сообщения о старте задач
+        if (resultCode == 1) {
+            String result = data.getStringExtra("speed");
+
+            MainText.setText("Gps - " + result);
+
+        }
+
+        // Ловим сообщения об окончании задач
+        if (resultCode == 2) {
+            String result = data.getStringExtra("speed");
+
+            MainText.setText("Network - " + result);
+            }
+        }
 }

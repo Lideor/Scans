@@ -12,6 +12,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
+
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -29,7 +31,7 @@ public class New_login extends Activity {
     String url = "http://www.zaural-vodokanal.ru/php/auth.php";
     final String LOG_TAG = "myLogs";
     Button btnReg; //кнопнка регестрации
-    EditText loginName;
+    TextView loginName;
     RequestTask log;
 
     @Override
@@ -41,7 +43,7 @@ public class New_login extends Activity {
 
         setContentView(R.layout.new_login);
         btnReg = (Button) findViewById(R.id.btnReg);
-        loginName = (EditText) findViewById(R.id.NewLogin);
+        loginName = (TextView) findViewById(R.id.NewLogin);
         btnReg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
