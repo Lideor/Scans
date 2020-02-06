@@ -91,9 +91,19 @@ public class MainActivity extends AppCompatActivity {
                 Intent stopIntent = new Intent(MainActivity.this, ServiceGps.class);
                 stopIntent.setAction(STARTFOREGROUND_STOP);
                 startService(stopIntent);
+
             }
         });
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
+        int permissionStatus = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+        if (permissionStatus == PackageManager.PERMISSION_GRANTED) {
+            int permissonStatus =1;
+            float kakogo = 5.5F;
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,5000 * 1,5.5F, locationListener);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,5000 * 1,5.5F, locationListener);
+
+        }
 
     }
 
@@ -182,13 +192,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //получение гпс2
-
-    public void onClickLocationSettings(View view) {
-        startActivity(new Intent(
-                android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-    };
-
     int loadLogin_id() {
         sPref = getSharedPreferences("prefs",MODE_PRIVATE);
         login_id = sPref.getInt("login_id", -1);
@@ -228,24 +231,75 @@ public class MainActivity extends AppCompatActivity {
 
     //отлдка
 
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        Log.d(LOG_TAG, "requestCode = " + requestCode + ", resultCode = "
-                + resultCode);
+    //класс слушателя гпс, реагирующего на изменения геоданных
+    private LocationListener locationListener = new LocationListener() {
 
-        // Ловим сообщения о старте задач
-        if (resultCode == 1) {
-            String result = data.getStringExtra("speed");
-
-            MainText.setText("Gps - " + result);
-
+        @Override
+        public void onLocationChanged(Location loc) {
+            showLocation(loc);
         }
 
-        // Ловим сообщения об окончании задач
-        if (resultCode == 2) {
-            String result = data.getStringExtra("speed");
+        @Override
+        public void onProviderDisabled(String provider) {
+            checkEnabled();
+        }
 
-            MainText.setText("Network - " + result);
+        @Override
+        public void onProviderEnabled(String provider) {
+            checkEnabled();
+            int permissionStatus = ContextCompat.checkSelfPermission(Ctn, Manifest.permission.ACCESS_FINE_LOCATION);
+            showLocation(locationManager.getLastKnownLocation(provider));
+            //           lastPos = locationManager.getLastKnownLocation(provider);
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+            Log.d(LOG_TAG, "off");
+            if (provider.equals(LocationManager.GPS_PROVIDER)) {
+                //MainText.setText("Status: " + String.valueOf(status));
+            } else if (provider.equals(LocationManager.NETWORK_PROVIDER)) {
+                //   MainText.setText("Status: " + String.valueOf(status));
             }
         }
+    };
+
+    // отправка пакетов
+    private void showLocation(Location location) {
+
+        String lat = String.format(Locale.ENGLISH,"%1$.4f",location.getLatitude());
+        String lon = String.format(Locale.ENGLISH,"%1$.4f",location.getLongitude());
+        String date = String.format(String.format("%1$tF %1$tT",location.getTime()));
+        String provider;
+
+        String speed2 = String.format(Locale.ENGLISH,"%1$.4f",location.getSpeed());
+        String speed="";
+
+
+        if (location.getProvider().equals(LocationManager.GPS_PROVIDER)) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                speed = String.format(Locale.ENGLISH,"%1$.4f",location.getSpeedAccuracyMetersPerSecond());
+            }
+            provider = "GPS";
+            MainText.setText("Gps: " + speed2+"/"+speed+" date: "+date);
+        }
+        else if (location.getProvider().equals(LocationManager.NETWORK_PROVIDER)) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    speed = String.format(Locale.ENGLISH,"%1$.4f",location.getSpeedAccuracyMetersPerSecond());
+            }
+            provider = "NETWORK";
+            Netw.setText("NETWORK: " + speed2+"/"+speed+" date: "+date);
+        }
+        else provider = "OTHER";
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+             speed = String.format(Locale.ENGLISH,"%1$.4f",location.getSpeedAccuracyMetersPerSecond());
+            Log.d(LOG_TAG,speed+"-"+provider);
+
+        }
+    }
+
+    private void checkEnabled() {
+
+    }
 }
+
+

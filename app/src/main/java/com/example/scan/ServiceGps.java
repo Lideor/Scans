@@ -260,16 +260,7 @@ public class ServiceGps extends Service {
         }
 
         //отладка
-        Intent ServiceIntent = new Intent();
-        PendingIntent pi = inten.getParcelableExtra("probider");
 
-        try {
-            pi.send(ServiceGps.this,fl,new Intent().putExtra("speed",speed2));
-
-        }
-        catch (Exception e) {
-            Log.d(LOG_TAG,"Exp=" + e);
-        }
 
         Log.d(LOG_TAG,speed2+"-"+provider);
         if(isOnline()) {
