@@ -178,7 +178,7 @@ public class ServiceGps extends Service {
         catch (Exception e) {
             Log.d(LOG_TAG,"Exp=" + e);
         }
-        return super.onStartCommand(intent, flags, startId);
+        return Service.START_STICKY;
     }
 
     private void stopCommand(){
