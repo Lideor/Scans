@@ -47,8 +47,10 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Queue;
 
 import static androidx.core.app.NotificationCompat.PRIORITY_HIGH;
 import static com.example.scan.ServiceGps.CHANNEL_ID;
@@ -63,14 +65,20 @@ public class MainActivity extends AppCompatActivity {
     final int REQUEST_READ_EXTERNAL_STORAGE = 400; // код ддя проверки разрешения на запись файла
     final int REQUEST_RECEIVE_BOOT_COMPLETED = 500;
 
+    //работа со скоростью
+    private final int RADIUS = 6371; // в км
+    private final int TIMEGPS = 1000*60*60; //мл в час
+    private Queue<Location> locArr = new LinkedList<Location>(); // предыдущие
+    private Location oldLoc= null;
+
     private static final int NOTIFY_ID = 101;
 
-    TextView MainText; // бокс основного текста
+    private TextView MainText; // бокс основного текста
 
-    TextView Netw; // бокс основного текста
+    private TextView Netw; // бокс основного текста
 
     private LocationManager locationManager;// локация
-    Context Ctn = this;//контекст
+    private Context Ctn = this;//контекст
     private int flag = 0;
     public static String STARTFOREGROUND_STOP = "Stop";
     //отладка
@@ -287,14 +295,54 @@ public class MainActivity extends AppCompatActivity {
                     speed = String.format(Locale.ENGLISH,"%1$.4f",location.getSpeedAccuracyMetersPerSecond());
             }
             provider = "NETWORK";
-            Netw.setText("NETWORK: " + speed2+"/"+speed+" date: "+date);
+            MainText.setText("Gps: " + speed2+"/"+speed+" date: "+date);
         }
         else provider = "OTHER";
+
+        if(oldLoc!=null)Netw.setText("Скорость: " + getSpeed(location,oldLoc) + " км/ч");
+        oldLoc = location;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
              speed = String.format(Locale.ENGLISH,"%1$.4f",location.getSpeedAccuracyMetersPerSecond());
             Log.d(LOG_TAG,speed+"-"+provider);
 
         }
+    }
+
+    private double getSpeed(Location locNew, Location locOld){
+
+        double latNew = Math.toRadians(locNew.getLatitude());
+        double latOld = Math.toRadians(locOld.getLatitude());
+        double lonNew = Math.toRadians(locNew.getLongitude());
+        double lonOld = Math.toRadians(locOld.getLongitude());
+        double timeNew = locNew.getTime();
+        double timeOld = locOld.getTime();
+
+   /*отладка
+
+
+        double latNew = 0.97305499494;
+        double latOld = 0.88059617782;
+        double lonNew = 0.65680618262;
+        double lonOld = 0.53273751349;
+
+
+        double timeNew  = 0.65680618262;
+        double timeOld  = 0.53273751349;
+
+    */
+
+        double delLat = latNew - latOld;
+        double delLon = lonNew - lonOld;
+
+        double stepOne=Math.sin(delLat/2)*Math.sin(delLat/2)
+                +Math.cos(latNew)*Math.cos(latOld)*Math.sin(delLon/2)*Math.sin(delLon/2);
+        double stepTwo = 2*Math.atan2(Math.sqrt(stepOne),Math.sqrt(1-stepOne));
+
+        double inKM = RADIUS*stepTwo;
+
+        double speed = inKM/Math.abs((timeNew-timeOld)/TIMEGPS);
+
+        return speed;
     }
 
     private void checkEnabled() {
