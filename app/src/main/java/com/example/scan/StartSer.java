@@ -23,6 +23,7 @@ import androidx.core.content.ContextCompat;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
 import static androidx.core.app.NotificationCompat.PRIORITY_HIGH;
+import static com.example.scan.MainActivity.STARTFOREGROUND_ACTION;
 import static com.example.scan.ServiceGps.CHANNEL_ID;
 
 public class StartSer  extends BroadcastReceiver {
@@ -41,9 +42,12 @@ public class StartSer  extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
 
         String action = intent.getAction();
-
+        String action2 = intent.getStringExtra("Restart");
+        Log.d(LOG_TAG, "FFFFFFFF");
+        Toast.makeText(context, "Тута", Toast.LENGTH_LONG).show();
+;
         String message = "BootDeviceReceiver onReceive, action is " + action;
-        if (intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
+
             // ваш код здесь
             Log.d(LOG_TAG, "kuk");
             Log.d(LOG_TAG, "k213123123uk");
@@ -54,6 +58,8 @@ public class StartSer  extends BroadcastReceiver {
               Intent stopIntent = new Intent(context, ServiceGps.class);
               //stopIntent.setAction("START");
               intent.setPackage(context.getPackageName());
+              stopIntent.setAction(STARTFOREGROUND_ACTION);
+
               context.startForegroundService(stopIntent);
 
             } catch (Exception e) {
@@ -63,7 +69,7 @@ public class StartSer  extends BroadcastReceiver {
                 Toast.makeText(context, message, Toast.LENGTH_LONG).show();
             }
             Log.d(LOG_TAG, "kuk2");
-        }
+
     }
 
 }

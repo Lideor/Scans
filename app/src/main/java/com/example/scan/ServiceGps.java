@@ -2,6 +2,7 @@ package com.example.scan;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -48,16 +49,23 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
+
+import static com.example.scan.MainActivity.STARTFOREGROUND_ACTION;
+import static com.example.scan.MainActivity.STARTFOREGROUND_RESTART;
+import static com.example.scan.MainActivity.STARTFOREGROUND_STOP;
 
 public class ServiceGps extends Service {
 
     public static final int TWO_MINUTES = 120000; // 120 seconds
     public static Boolean isRunning = false;
     public static final String CHANNEL_ID = "ForegroundServiceChannel";
+
+    String RESTART = "com.example.scan.action.RESTAR";
 
     //работа с инетом
     private int fl=0;
@@ -89,7 +97,6 @@ public class ServiceGps extends Service {
 
     //уууу сука
     Context ctn = this;
-    public static String STARTFOREGROUND_ACTION = "Stop";
     TextView MainText; // бокс основного текста
 
     //расчет скорости
@@ -97,6 +104,10 @@ public class ServiceGps extends Service {
     private double lastLat=0;
     private double speed=0;
     private double lastTime=0;
+
+    private long currentTime;
+    private long deltTime=3*60*60*1000;
+
 
     public void onCreate() {
         super.onCreate();
@@ -128,56 +139,65 @@ public class ServiceGps extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(LOG_TAG, "tut1");
         inten = intent;
-
-        if(fl!=1) {
-            Log.d(LOG_TAG, "tut");
-            if (loadSaveId() == 1) {
-                NotificationManager notificationManager =
-                        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                    NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "My channel",
-                            NotificationManager.IMPORTANCE_HIGH);
-                    channel.setDescription("My channel description");
-                    channel.enableLights(true);
-                    channel.setLightColor(Color.RED);
-                    channel.enableVibration(false);
-                    notificationManager.createNotificationChannel(channel);
-                }
-
-                Intent notificationIntent = new Intent(ServiceGps.this, ServiceGps.class);
-
-                PendingIntent pendingIntent = PendingIntent.getActivity(ServiceGps.this, 0,
-                        notificationIntent, 0);
-
-                PendingIntent closeIntent = PendingIntent.getActivity(ServiceGps.this, 0,
-                        notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-
-
-                Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                        .setContentTitle("Я лисичка")
-                        .setContentText("Фыр фыр фыр")
-                        .setSmallIcon(R.drawable.ic_launcher_background)
-                        .setContentIntent(pendingIntent)
-                        .setOngoing(true)
-                        .addAction(R.drawable.ic_launcher_background, "Другой вариант", closeIntent)
-                        .build();
-
-                startForeground(1, notification);
-
-            }
-            fl=1;
-        }
         try {
-            if(intent.getAction().equals(STARTFOREGROUND_ACTION)){
+            if(intent!=null)
+            {
+               if(intent.getAction().equals(STARTFOREGROUND_STOP)){
                 Log.d(LOG_TAG, "tut2");
                 stopCommand();
+            }
+               if(intent.getAction().equals(STARTFOREGROUND_RESTART)){
+                Log.d(LOG_TAG, "tut3");
+                stopForeground(true);
+                fl=0;
+            }
+               if((fl!=1)&& intent.getAction().equals(STARTFOREGROUND_ACTION)) {
+                Log.d(LOG_TAG, "tut");
+                if (loadSaveId() == 1) {
+                    NotificationManager notificationManager =
+                            (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                        NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "My channel",
+                                NotificationManager.IMPORTANCE_HIGH);
+                        channel.setDescription("My channel description");
+                        channel.enableLights(true);
+                        channel.setLightColor(Color.RED);
+                        channel.enableVibration(false);
+                        notificationManager.createNotificationChannel(channel);
+                    }
+
+                    Intent notificationIntent = new Intent(ServiceGps.this, ServiceGps.class);
+
+                    PendingIntent pendingIntent = PendingIntent.getActivity(ServiceGps.this, 0,
+                            notificationIntent, 0);
+
+                    PendingIntent closeIntent = PendingIntent.getActivity(ServiceGps.this, 0,
+                            notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+
+
+                    Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                            .setContentTitle("Я лисичка")
+                            .setContentText("Фыр фыр фыр"+ Calendar.getInstance().getTime())
+                            .setSmallIcon(R.drawable.ic_launcher_background)
+                            .setContentIntent(pendingIntent)
+                            .setOngoing(true)
+                            .addAction(R.drawable.ic_launcher_background, "Другой вариант", closeIntent)
+                            .build();
+
+                    currentTime = System.currentTimeMillis();
+                    startForeground(1, notification);
+
+                }
+                fl=1;
+            }
             }
         }
 
         catch (Exception e) {
-            Log.d(LOG_TAG,"Exp=" + e);
+            Log.d(LOG_TAG,"ExpStartcommand=" + e);
         }
+
         return Service.START_STICKY;
     }
 
@@ -186,12 +206,9 @@ public class ServiceGps extends Service {
         stopSelf();
     }
 
-    public void onStop() {
-        Log.d(LOG_TAG, "onDestroy");
-    }
-
     public void onDestroy() {
         super.onDestroy();
+
         Log.d(LOG_TAG, "onDestroy");
     }
 
@@ -240,6 +257,17 @@ public class ServiceGps extends Service {
         String date = String.format(String.format("%1$tF %1$tT",location.getTime()));
         String provider;
 
+
+
+        //TODO: тута
+        if ((System.currentTimeMillis()-currentTime)>deltTime) {
+            Intent stopIntent = new Intent(this, ServiceGps.class);
+            stopIntent.setAction(STARTFOREGROUND_RESTART);
+            startService(stopIntent);
+        }
+
+
+
         String speed2 = String.format(Locale.ENGLISH,"%1$.4f",location.getSpeed());
 
         int fl = 1;//отлдка
@@ -265,10 +293,11 @@ public class ServiceGps extends Service {
         Log.d(LOG_TAG,speed2+"-"+provider);
         if(isOnline()) {
 
-            sender = new SendOnePackage();
-            sender.execute(lat, lon, date, provider);
             int buf = 1;
             try {
+
+                sender = new SendOnePackage();
+                sender.execute(lat, lon, date, provider);
                 sender.get();
                 int flag =sender.get();
                 if (sender.get()!= 1) buf=0;

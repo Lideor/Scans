@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 //асинхрон
 import android.net.Network;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -80,9 +81,12 @@ public class MainActivity extends AppCompatActivity {
     private LocationManager locationManager;// локация
     private Context Ctn = this;//контекст
     private int flag = 0;
+    public static String STARTFOREGROUND_ACTION = "Start";
     public static String STARTFOREGROUND_STOP = "Stop";
+    public static String STARTFOREGROUND_RESTART = "Restart";
+
     //отладка
-    final String LOG_TAG = "myLogs";
+    public static String LOG_TAG = "myLogs";
     Button btnReg; //кнопнка регестрации
 
     @Override
@@ -98,7 +102,12 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent stopIntent = new Intent(MainActivity.this, ServiceGps.class);
                 stopIntent.setAction(STARTFOREGROUND_STOP);
-                startService(stopIntent);
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(stopIntent);
+                } else {
+                    startService(stopIntent);
+                }
 
             }
         });
@@ -143,11 +152,15 @@ public class MainActivity extends AppCompatActivity {
                 Intent ServiceIntent = new Intent();
                 PendingIntent pi = createPendingResult(1, ServiceIntent, 0);
                 Intent stopIntent = new Intent(MainActivity.this, ServiceGps.class).putExtra("2", pi);
+                stopIntent.setAction(STARTFOREGROUND_ACTION);
 
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(stopIntent);
+                    Log.d(LOG_TAG, "uuuuu");
 
-                stopIntent.setAction("START");
-                startService(stopIntent);
-                flag = 1;
+                } else {
+                    startService(stopIntent);
+                }                flag = 1;
             }
             catch (Exception e) {
                 Log.d(LOG_TAG,"ExpMain=" + e);
@@ -348,6 +361,7 @@ public class MainActivity extends AppCompatActivity {
     private void checkEnabled() {
 
     }
+
 }
 
 
