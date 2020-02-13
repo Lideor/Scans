@@ -106,7 +106,7 @@ public class ServiceGps extends Service {
     private double lastTime=0;
 
     private long currentTime;
-    private long deltTime=3*60*60*1000;
+    private long deltTime=10*60*1000;
 
 
     public void onCreate() {
@@ -149,44 +149,16 @@ public class ServiceGps extends Service {
                if(intent.getAction().equals(STARTFOREGROUND_RESTART)){
                 Log.d(LOG_TAG, "tut3");
                 stopForeground(true);
+                   if (loadSaveId() == 1) {
+                       Start();
+
+                   }
                 fl=0;
             }
                if((fl!=1)&& intent.getAction().equals(STARTFOREGROUND_ACTION)) {
                 Log.d(LOG_TAG, "tut");
                 if (loadSaveId() == 1) {
-                    NotificationManager notificationManager =
-                            (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                        NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "My channel",
-                                NotificationManager.IMPORTANCE_HIGH);
-                        channel.setDescription("My channel description");
-                        channel.enableLights(true);
-                        channel.setLightColor(Color.RED);
-                        channel.enableVibration(false);
-                        notificationManager.createNotificationChannel(channel);
-                    }
-
-                    Intent notificationIntent = new Intent(ServiceGps.this, ServiceGps.class);
-
-                    PendingIntent pendingIntent = PendingIntent.getActivity(ServiceGps.this, 0,
-                            notificationIntent, 0);
-
-                    PendingIntent closeIntent = PendingIntent.getActivity(ServiceGps.this, 0,
-                            notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-
-
-                    Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                            .setContentTitle("Я лисичка")
-                            .setContentText("Фыр фыр фыр"+ Calendar.getInstance().getTime())
-                            .setSmallIcon(R.drawable.ic_launcher_background)
-                            .setContentIntent(pendingIntent)
-                            .setOngoing(true)
-                            .addAction(R.drawable.ic_launcher_background, "Другой вариант", closeIntent)
-                            .build();
-
-                    currentTime = System.currentTimeMillis();
-                    startForeground(1, notification);
+                    Start();
 
                 }
                 fl=1;
@@ -206,6 +178,42 @@ public class ServiceGps extends Service {
         stopSelf();
     }
 
+
+    private void Start(){
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "My channel",
+                    NotificationManager.IMPORTANCE_HIGH);
+            channel.setDescription("My channel description");
+            channel.enableLights(true);
+            channel.setLightColor(Color.RED);
+            channel.enableVibration(false);
+            notificationManager.createNotificationChannel(channel);
+        }
+
+        Intent notificationIntent = new Intent(ServiceGps.this, ServiceGps.class);
+
+        PendingIntent pendingIntent = PendingIntent.getActivity(ServiceGps.this, 0,
+                notificationIntent, 0);
+
+        PendingIntent closeIntent = PendingIntent.getActivity(ServiceGps.this, 0,
+                notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+
+
+        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("Я лисичка")
+                .setContentText("Фыр фыр фыр"+ Calendar.getInstance().getTime())
+                .setSmallIcon(R.drawable.ic_launcher_background)
+                .setContentIntent(pendingIntent)
+                .setOngoing(true)
+                .addAction(R.drawable.ic_launcher_background, "Другой вариант", closeIntent)
+                .build();
+
+        currentTime = System.currentTimeMillis();
+        startForeground(1, notification);
+    }
     public void onDestroy() {
         super.onDestroy();
 
@@ -259,13 +267,13 @@ public class ServiceGps extends Service {
 
 
 
-        //TODO: тута
+        /*TODO: тута
         if ((System.currentTimeMillis()-currentTime)>deltTime) {
             Intent stopIntent = new Intent(this, ServiceGps.class);
             stopIntent.setAction(STARTFOREGROUND_RESTART);
             startService(stopIntent);
         }
-
+        */
 
 
         String speed2 = String.format(Locale.ENGLISH,"%1$.4f",location.getSpeed());
