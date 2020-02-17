@@ -51,8 +51,9 @@ public class New_login extends Activity {
                 if (loginName.getText().toString() != "") {
                     System.out.print("asdddddddddasdasd");
                     log = new RequestTask();
-                    log.execute(loginName.getText().toString());
+
                    try {
+                       log.execute( new String(loginName.getText().toString().getBytes("UTF-8")));
                        log.get();
                    }
                    catch (Exception e) {

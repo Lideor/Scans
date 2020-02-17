@@ -51,11 +51,10 @@ public class JsonParse {
             Log.d(LOG_TAG, "Файл записан");
 
         } catch (FileNotFoundException e) {
-            Log.d(LOG_TAG, e.toString());
-
+            Log.d(LOG_TAG,"Exp=" + e);
             e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.d(LOG_TAG,"Exp=" + e);
         }
         return true;
     }
@@ -85,13 +84,13 @@ public class JsonParse {
                 fileReader.close();
             } catch (IOException e)
             {
-                e.printStackTrace();
+                Log.d(LOG_TAG,"Exp=" + e);
             }
 
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            Log.d(LOG_TAG,"Exp=" + e);
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.d(LOG_TAG,"Exp=" + e);
         }
 
         Log.d(LOG_TAG,jsonString);
