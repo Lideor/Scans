@@ -93,11 +93,6 @@ public class ServiceGps extends Service {
     private List<SaveOnePackage> allPackage;
     private JsonParse parseJson;
 
-    Handler mHandler = new Handler();
-
-    //уууу сука
-    Context ctn = this;
-    TextView MainText; // бокс основного текста
 
     //расчет скорости
     private double lastLon=0;
@@ -119,7 +114,7 @@ public class ServiceGps extends Service {
         if (permissionStatus == PackageManager.PERMISSION_GRANTED) {
             int permissonStatus =1;
             float kakogo = 5.5F;
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,5000 * 1,0, locationListener);
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,5000 * 1,5.5F, locationListener);
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,5000 * 1,5.5F, locationListener);
 
         }
@@ -204,11 +199,11 @@ public class ServiceGps extends Service {
 
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Я лисичка")
-                .setContentText("Фыр фыр фыр"+ Calendar.getInstance().getTime())
-                .setSmallIcon(R.drawable.ic_launcher_background)
+                .setContentText("Фыр фыр фыр")
+                .setSmallIcon(R.drawable.ic_brightness_2_black_24dp)
                 .setContentIntent(pendingIntent)
                 .setOngoing(true)
-                .addAction(R.drawable.ic_launcher_background, "Другой вариант", closeIntent)
+                .addAction(R.drawable.ic_brightness_2_black_24dp, "Другой вариант", closeIntent)
                 .build();
 
         currentTime = System.currentTimeMillis();

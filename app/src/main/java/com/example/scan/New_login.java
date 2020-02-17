@@ -21,6 +21,8 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.HTTP;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +34,7 @@ public class New_login extends Activity {
     final String LOG_TAG = "myLogs";
     Button btnReg; //кнопнка регестрации
     TextView loginName;
+    TextView info;
     RequestTask log;
 
     @Override
@@ -40,21 +43,24 @@ public class New_login extends Activity {
 
         super.onCreate(savedInstanceState);
         Log.d(LOG_TAG, "onStartlogin");
-
+loadLogin_id();
         setContentView(R.layout.new_login);
         btnReg = (Button) findViewById(R.id.btnReg);
         loginName = (TextView) findViewById(R.id.NewLogin);
+        info = (TextView) findViewById(R.id.info);
         btnReg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 System.out.print("asddddddddasdasddddddddd=");
-                if (loginName.getText().toString() != "") {
-                    System.out.print("asdddddddddasdasd");
+
+                if (!(loginName.getText().toString()).equals("")) {
                     log = new RequestTask();
 
                    try {
+
                        log.execute( new String(loginName.getText().toString().getBytes("UTF-8")));
-                       log.get();
+                      if(log.get()==0)  info.setText("Такое имя уже есть ┐(￣ヘ￣)┌");
+                      else if(log.get()==1) info.setText("Что то не работает, попробуй позже (⋟﹏⋞)");
                    }
                    catch (Exception e) {
                        Log.d(LOG_TAG,"Exp=" + e);
@@ -63,15 +69,15 @@ public class New_login extends Activity {
                 } else {
                     System.out.print("asddddddddddddddddddddddddddddd=");
                     System.out.print(loginName.getText().toString());
-                    loginName.setText("adsasd");
+                    info.setText("Надо хоть что то ввести (╬ Ò﹏Ó)");
                 }
             }
         });
     }
-        class RequestTask extends AsyncTask<String, String, String> {
+        class RequestTask extends AsyncTask<String, Integer, Integer> {
 
             @Override
-            protected String doInBackground(String... params) {
+            protected Integer doInBackground(String... params) {
 
                 try {
                     //создаем запрос на сервер
@@ -86,10 +92,11 @@ public class New_login extends Activity {
                     nameValuePairs.add(new BasicNameValuePair("login_name",params[0]));
                     //пароль
                     //собераем их вместе и посылаем на сервер
-                    postMethod.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+                    postMethod.setEntity(new UrlEncodedFormEntity(nameValuePairs, HTTP.UTF_8));
                     //получаем ответ от сервера
                     String response = hc.execute(postMethod, res);
-                    if (response!="not")
+                    if (response.equals("-2"))return 0;
+                    if (!response.equals("-1"))
                     {
                         int num = Integer.parseInt(response);
                         sPref = getSharedPreferences("prefs",MODE_PRIVATE);
@@ -100,10 +107,19 @@ public class New_login extends Activity {
                         finish();
                     }
 
+                    else return 1;
                 } catch (Exception e) {
                     System.out.println("Exp=" + e);
                 }
                 return null;
             }
+    }
+
+    int loadLogin_id() {
+        sPref = getSharedPreferences("prefs",MODE_PRIVATE);
+        int login_id = sPref.getInt("login_id", -1);
+        if (login_id == -1) return 0;
+        else return 1;
+
     }
 }

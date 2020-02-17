@@ -89,8 +89,6 @@ public class JsonParse {
 
         } catch (FileNotFoundException e) {
             Log.d(LOG_TAG,"Exp=" + e);
-        } catch (IOException e) {
-            Log.d(LOG_TAG,"Exp=" + e);
         }
 
         Log.d(LOG_TAG,jsonString);

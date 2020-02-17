@@ -13,7 +13,7 @@ android {
         exclude 'META-INF/ASL2.0'
     }
     defaultConfig {
-        applicationId "com.example.scan"
+        applicationId "com.test.scan"
         minSdkVersion 15
         targetSdkVersion 28
         versionCode 1

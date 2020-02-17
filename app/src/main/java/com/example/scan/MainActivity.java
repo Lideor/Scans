@@ -58,6 +58,7 @@ import static com.example.scan.ServiceGps.CHANNEL_ID;
 
 public class MainActivity extends AppCompatActivity {
     int login_id = -1;//логин пользователя
+    String login_name="";
     SharedPreferences sPref;// файл с настройками
 
     String url = "http://www.zaural-vodokanal.ru/php/get_pos.php"; // отправка локации
@@ -94,33 +95,52 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         MainText =(TextView) findViewById(R.id.MainText);
-        Netw =(TextView) findViewById(R.id.Network);
+
 
         btnReg = (Button) findViewById(R.id.Start);
         btnReg.setOnClickListener(new View.OnClickListener() {
+            int n=1;
             @Override
             public void onClick(View v) {
-                Intent stopIntent = new Intent(MainActivity.this, ServiceGps.class);
-                stopIntent.setAction(STARTFOREGROUND_STOP);
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    startForegroundService(stopIntent);
-                } else {
-                    startService(stopIntent);
+                switch (n){
+                    case 1:
+                        MainText.setText("Не делай так больше пожалуйста");
+                        break;
+                    case 2:
+                        MainText.setText("Да это забавно,но не делай так, мне не приятно");
+                        break;
+                    case 3:
+                        MainText.setText("Почему, мистер "+login_name+", почему? Во имя чего?");
+                        break;
+                    case 4:
+                        MainText.setText("Я просто промолчу");
+                        break;
+                    case 5:
+                        MainText.setText("Хватит остановись, ты мешаешь мне следить за тобой");
+                        break;
+                    case 6:
+                        MainText.setText("Если продолжешь\n  я всем расскажу куда ты ходил(а)\n в прошлую в пятницу");
+                        break;
+                    case 7:
+                        MainText.setText("Уходи");
+                        break;
+                    case 8:
+                        MainText.setText("Я сейчас обижусь");
+                        break;
+                    case 9:
+                        MainText.setText("Ой все");
+                        break;
+                    case 10:
+                        btnReg.setVisibility(View.INVISIBLE);
+                        MainText.setText("И что ты теперь сделаешь? А? А? А?");
+                        break;
                 }
-
+                n++;
             }
         });
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
-        int permissionStatus = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
-        if (permissionStatus == PackageManager.PERMISSION_GRANTED) {
-            int permissonStatus =1;
-            float kakogo = 5.5F;
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,5000 * 1,5.5F, locationListener);
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,5000 * 1,5.5F, locationListener);
 
-        }
 
     }
 
@@ -216,6 +236,7 @@ public class MainActivity extends AppCompatActivity {
     int loadLogin_id() {
         sPref = getSharedPreferences("prefs",MODE_PRIVATE);
         login_id = sPref.getInt("login_id", -1);
+        login_name = sPref.getString("login_name", "");
         if (login_id == -1) return 0;
         else return 1;
 
@@ -226,6 +247,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+
         return true;
     }
 
@@ -238,20 +260,55 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            sPref = getPreferences(MODE_PRIVATE);
+            sPref = getSharedPreferences("prefs",MODE_PRIVATE);
             Intent intent = new Intent(MainActivity.this, New_login.class);
             SharedPreferences.Editor ed = sPref.edit();
-            ed.putInt("login_id", -1);
-            ed.apply();
+            ed.clear().commit();
             startActivity(intent);
 
         }
+        if (id == R.id.stop) {
+            Intent stopIntent = new Intent(MainActivity.this, ServiceGps.class);
+            stopIntent.setAction(STARTFOREGROUND_STOP);
 
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(stopIntent);
+            } else {
+                startService(stopIntent);
+            }
+        }
+        if (id==R.id.start){
+            if (loadLogin_id() == 0) {
+                Intent stopIntent = new Intent(MainActivity.this, New_login.class);
+                startActivity(stopIntent);
+            }
+            else{
+                try {
+
+                    Intent ServiceIntent = new Intent();
+                    PendingIntent pi = createPendingResult(1, ServiceIntent, 0);
+                    Intent stopIntent = new Intent(MainActivity.this, ServiceGps.class).putExtra("2", pi);
+                    stopIntent.setAction(STARTFOREGROUND_ACTION);
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        startForegroundService(stopIntent);
+                        Log.d(LOG_TAG, "uuuuu");
+
+                    } else {
+                        startService(stopIntent);
+                    }                flag = 1;
+                }
+                catch (Exception e) {
+                    Log.d(LOG_TAG,"ExpMain=" + e);
+
+                }
+            }
+        }
         return super.onOptionsItemSelected(item);
     }
 
     //отлдка
-
+/*
     //класс слушателя гпс, реагирующего на изменения геоданных
     private LocationListener locationListener = new LocationListener() {
 
@@ -343,7 +400,7 @@ public class MainActivity extends AppCompatActivity {
         double timeOld  = 0.53273751349;
 
     */
-
+/*
         double delLat = latNew - latOld;
         double delLon = lonNew - lonOld;
 
@@ -356,7 +413,7 @@ public class MainActivity extends AppCompatActivity {
         double speed = inKM/Math.abs((timeNew-timeOld)/TIMEGPS);
 
         return speed;
-    }
+    }*/
 
     private void checkEnabled() {
 
