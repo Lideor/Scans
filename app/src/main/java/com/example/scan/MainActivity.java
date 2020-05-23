@@ -46,6 +46,8 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.widget.Toast;
 
+import com.example.scan.ItemModel.Model;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
@@ -96,48 +98,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         MainText =(TextView) findViewById(R.id.MainText);
 
+        Model model =new JsonParse().convertJsonModel(new OnBD().GetJsonModel(11));
 
-        btnReg = (Button) findViewById(R.id.Start);
-        btnReg.setOnClickListener(new View.OnClickListener() {
-            int n=1;
-            @Override
-            public void onClick(View v) {
-                switch (n){
-                    case 1:
-                        MainText.setText("Не делай так больше пожалуйста");
-                        break;
-                    case 2:
-                        MainText.setText("Да это забавно,но не делай так, мне не приятно");
-                        break;
-                    case 3:
-                        MainText.setText("Почему, мистер "+login_name+", почему? Во имя чего?");
-                        break;
-                    case 4:
-                        MainText.setText("Я просто промолчу");
-                        break;
-                    case 5:
-                        MainText.setText("Хватит остановись, ты мешаешь мне следить за тобой");
-                        break;
-                    case 6:
-                        MainText.setText("Если продолжешь\n  я всем расскажу куда ты ходил(а)\n в прошлую в пятницу");
-                        break;
-                    case 7:
-                        MainText.setText("Уходи");
-                        break;
-                    case 8:
-                        MainText.setText("Я сейчас обижусь");
-                        break;
-                    case 9:
-                        MainText.setText("Ой все");
-                        break;
-                    case 10:
-                        btnReg.setVisibility(View.INVISIBLE);
-                        MainText.setText("И что ты теперь сделаешь? А? А? А?");
-                        break;
-                }
-                n++;
-            }
-        });
+
+        model.toString();
+
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
 

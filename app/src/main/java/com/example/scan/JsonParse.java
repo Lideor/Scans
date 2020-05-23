@@ -6,7 +6,9 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.util.Log;
 
+import com.example.scan.ItemModel.Model;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -31,9 +33,9 @@ import static android.content.Context.MODE_PRIVATE;
 
 
 public class JsonParse {
+
     private String LOG_TAG = "mylogs";
     private final String FILENAME = "Package.txt"; // имя файла
-
     //загрухка в файл пакета
     public boolean exportJsonInFile(List<SaveOnePackage> allPackage, Context ctn){
         Gson gson = new Gson();
@@ -96,8 +98,27 @@ public class JsonParse {
         //return true;
     }
 
+    //очистка файла пакетов
     public boolean deleteFile(Context ctn){
         ctn.deleteFile(FILENAME);
         return true;
     }
+
+
+    //конферт json в модель
+    public Model convertJsonModel(String jsonModel){
+        Model model=null;
+        Gson gson = new GsonBuilder().create();
+
+        try {
+            model = gson.fromJson(jsonModel, Model.class);//десерелизуем полученную строку по образу объекта
+        } catch (ArithmeticException e) {
+            Log.d(LOG_TAG,e.toString());
+        }
+
+        return model;
+    }
+
+
+
 }
