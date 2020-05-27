@@ -17,7 +17,7 @@ public class Time {
     @JsonProperty("minutes")
     private int minutes=0;
 
-    Time(int year,int month,int day,int hours,int minutes){
+    public Time(int year,int month,int day){
         this.year=year;
         this.month=month;
         this.day=day;
@@ -25,7 +25,15 @@ public class Time {
         this.minutes=minutes;
     }
 
-    Time(int hours,int minutes){
+    public Time(int year,int month,int day,int hours,int minutes){
+        this.year=year;
+        this.month=month;
+        this.day=day;
+        this.hours=hours;
+        this.minutes=minutes;
+    }
+
+    public Time(int hours,int minutes){
         this.hours=hours;
         this.minutes=minutes;
     }
@@ -48,6 +56,48 @@ public class Time {
 
     public int getMinutes(){
         return minutes;
+    }
+
+
+    public String getStringShort(){
+        String h;
+        String m;
+        if(hours<10) h="0"+hours;
+        else h=""+hours;
+        if(minutes<10) m="0"+minutes;
+        else m=""+minutes;
+        return h+":"+m;
+    }
+
+    public String getStringLong(){
+        String h;
+        String m;
+        String d;
+        String month;
+        if(day<10) d="0"+this.day;
+        else d=""+day;
+        if(this.month<10) month="0"+this.month;
+        else month=""+this.month;
+        if(hours<10) h="0"+hours;
+        else h=""+hours;
+        if(minutes<10) m="0"+minutes;
+        else m=""+minutes;
+        return year+"-"+month+"-"+d+" "+h+":"+m+":00";
+    }
+    public String getStringDate(){
+        String h;
+        String m;
+        String d;
+        String month;
+        if(day<10) d="0"+this.day;
+        else d=""+day;
+        if(this.month<10) month="0"+this.month;
+        else month=""+this.month;
+        if(hours<10) h="0"+hours;
+        else h=""+hours;
+        if(minutes<10) m="0"+minutes;
+        else m=""+minutes;
+        return year+"-"+month+"-"+d;
     }
 
     public void setYear(int year) {

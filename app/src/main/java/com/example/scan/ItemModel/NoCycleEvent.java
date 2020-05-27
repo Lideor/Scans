@@ -1,53 +1,43 @@
 package com.example.scan.ItemModel;
 
-public class NoCycleEvent {
-    private Point center;
-    private int rang;
-    private TimeRange time;
-    private int noCycleEventId;
-    private String address;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-    NoCycleEvent(Point center, int rang, TimeRange time){
-        this.center =center;
-        this.rang=rang;
-        this.time=time;
+public class NoCycleEvent extends Event{
+
+
+
+    @JsonProperty("color")
+    private String color;
+
+    public NoCycleEvent(Point center, int rang, TimeRange time,String address,String name,String color){
+        super(center,address,time,rang,0,name);
+        this.color = color;
 
     }
 
-    public String getAddress() {
-        return address;
+    public NoCycleEvent(int rang, TimeRange time,String address,String name,String color){
+        super(address,time,rang,0,name);
+        this.color = color;
+
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public NoCycleEvent(int rang, TimeRange time,String address){
+        super(address,time,rang,0);
+
     }
 
-    public TimeRange getTime() {
-        return time;
+
+    public String getColor() {
+        return color;
     }
 
-    public Point getCenter() {
-        return center;
+    public void setColor(String color) {
+        this.color = color;
     }
 
-    public int getRang() {
-        return rang;
-    }
 
     public int getNoCycleEventId() {
-        return noCycleEventId;
-    }
-
-    public void setTime(TimeRange time) {
-        this.time = time;
-    }
-
-    public void setRang(int rang) {
-        this.rang = rang;
-    }
-
-    public void setCenter(Point center) {
-        this.center = center;
+        return getEventId();
     }
 
 }

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:card_view="http://schemas.android.com/tools"
+    android:id="@+id/card"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:layout_marginLeft="5dp"
+
+    android:layout_marginRight="5dp"
+    android:layout_marginBottom="5dp"
+
+
+
+    card_view:background="@color/colorMainCard">
+<RelativeLayout
+    android:id="@+id/all"
+    android:clickable="true"
+    android:layout_width="match_parent"
+    android:layout_height="92dp">
+    <RelativeLayout
+        android:id="@+id/main"
+
+        android:layout_width="match_parent"
+        android:layout_height="92dp">
+
+        <RelativeLayout
+            android:id="@+id/time"
+
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@color/colorAccent"
+            android:padding="14dp">
+
+            <TextView
+                android:id="@+id/start"
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_gravity="center|top"
+
+                android:layout_marginTop="0dp"
+                android:text="15:20"
+                android:textColor="@color/colorMainCard"
+                android:textSize="20sp"
+                android:visibility="visible" />
+
+            <TextView
+
+                android:layout_width="20dp"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/start"
+                android:layout_alignParentStart="true"
+                android:layout_gravity="top"
+                android:layout_marginStart="21dp"
+                android:layout_marginTop="-17.5dp"
+                android:text="-"
+                android:textColor="@color/colorMainCard"
+                android:textSize="30dp" />
+
+            <TextView
+                android:id="@+id/end"
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/start"
+                android:layout_gravity="center|top"
+                android:layout_marginTop="9dp"
+                android:text="16:20"
+                android:textColor="@color/colorMainCard"
+                android:textSize="20sp" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/day"
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:layout_toEndOf="@+id/time"
+
+            android:padding="10dp">
+
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="wrap_content"
+
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_gravity="center|top"
+                android:layout_marginTop="0dp"
+                android:layout_marginEnd="10dp"
+                android:gravity="left|center"
+                android:text="Дом"
+                android:textColor="@color/colorMainText"
+                android:textSize="25sp"
+
+                android:visibility="visible" />
+
+            <TextView
+                android:id="@+id/type"
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/title"
+
+                android:text=""
+                android:layout_marginTop="10dp"
+                android:textColor="@color/colorMainText"
+                android:textSize="17sp"
+                android:visibility="visible" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/rang"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:gravity="center"
+            android:layout_marginTop="26dp"
+            android:layout_marginRight="26dp"
+            android:background="@drawable/shape_owl"
+            android:foregroundGravity="fill_horizontal|top|left">
+
+            <TextView
+                android:id="@+id/rang_text"
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_marginTop="0dp"
+
+                android:text="1"
+                android:textColor="@color/colorBackground"
+                android:textSize="25sp"
+                android:visibility="visible" />
+        </RelativeLayout>
+
+    </RelativeLayout>
+    <RelativeLayout
+        android:layout_width="94dp"
+        android:layout_height="94dp"
+        android:background="@drawable/shape_owl_black"
+        android:layout_toEndOf="@id/main">
+
+    </RelativeLayout>
+</RelativeLayout>
+
+</androidx.cardview.widget.CardView>
+

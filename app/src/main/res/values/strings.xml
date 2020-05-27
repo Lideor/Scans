@@ -3,4 +3,6 @@
     <string name="action_settings">Сбросить пользователя</string>
     <string name="startService">Запустить сервис</string>
     <string name="stopService">Отключить сервис</string>
+    <string name="mapbox_access_token">MAPBOX_ACCESS_TOKEN</string>
+
 </resources>

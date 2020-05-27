@@ -1,12 +1,14 @@
 package com.example.scan;
+
 import android.Manifest;
+import android.app.Activity;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 
-//асинхрон
+//????????
 import android.net.Network;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -14,13 +16,17 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import android.content.Context;
 
 import android.content.Intent;
-//сохранение текста
+//?????????? ??????
 
 
 import android.os.Bundle;
@@ -29,9 +35,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-// работа с инетом
+// ?????? ? ??????
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -40,13 +47,17 @@ import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 
-//работа с локацией
+//?????? ? ????????
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.widget.Toast;
 
+import com.example.scan.ItemModel.DayNoCycle;
+import com.example.scan.ItemModel.Event;
 import com.example.scan.ItemModel.Model;
+import com.example.scan.ItemModel.MonthNoCycle;
+import com.example.scan.ItemModel.Time;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -54,84 +65,121 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Queue;
+import java.util.Calendar;
 
 import static androidx.core.app.NotificationCompat.PRIORITY_HIGH;
 import static com.example.scan.ServiceGps.CHANNEL_ID;
 
 public class MainActivity extends AppCompatActivity {
-    int login_id = -1;//логин пользователя
-    String login_name="";
-    SharedPreferences sPref;// файл с настройками
-
-    String url = "http://www.zaural-vodokanal.ru/php/get_pos.php"; // отправка локации
-    final int REQUEST_CODE_ACCESS_FINE_LOCATION = 200; // код ддя проверки разрешения на геолокаццию
-    final int REQUEST_WRITE_EXTERNAL_STORAGE = 300; // код ддя проверки разрешения на запись
-    final int REQUEST_READ_EXTERNAL_STORAGE = 400; // код ддя проверки разрешения на запись файла
+    int login_id = -1;//????? ????????????
+    String login_name = "";
+    int modelInFile = 0;
+    SharedPreferences sPref;// ???? ? ???????????
+    String url = "http://www.zaural-vodokanal.ru/php/get_pos.php"; // ???????? ???????
+    final int REQUEST_CODE_ACCESS_FINE_LOCATION = 200; // ??? ??? ???????? ?????????? ?? ???????????
+    final int REQUEST_WRITE_EXTERNAL_STORAGE = 300; // ??? ??? ???????? ?????????? ?? ??????
+    final int REQUEST_READ_EXTERNAL_STORAGE = 400; // ??? ??? ???????? ?????????? ?? ?????? ?????
     final int REQUEST_RECEIVE_BOOT_COMPLETED = 500;
 
-    //работа со скоростью
-    private final int RADIUS = 6371; // в км
-    private final int TIMEGPS = 1000*60*60; //мл в час
-    private Queue<Location> locArr = new LinkedList<Location>(); // предыдущие
-    private Location oldLoc= null;
+    //?????? ?? ?????????
 
-    private static final int NOTIFY_ID = 101;
 
-    private TextView MainText; // бокс основного текста
-
-    private TextView Netw; // бокс основного текста
-
-    private LocationManager locationManager;// локация
-    private Context Ctn = this;//контекст
+    private Context Ctn = this;//????????
     private int flag = 0;
     public static String STARTFOREGROUND_ACTION = "Start";
     public static String STARTFOREGROUND_STOP = "Stop";
     public static String STARTFOREGROUND_RESTART = "Restart";
 
-    //отладка
+    //???????
     public static String LOG_TAG = "myLogs";
-    Button btnReg; //кнопнка регестрации
+    Button btnReg; //??????? ???????????
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        MainText =(TextView) findViewById(R.id.MainText);
+        View btm=(View) findViewById(R.id.button);
+        btm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, EventActivity.class);
 
-        Model model =new JsonParse().convertJsonModel(new OnBD().GetJsonModel(11));
+                startActivity(intent);
 
+            }
 
-        model.toString();
-
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
-
+        });
+        //new JsonParse().exportModelToJson(this,new JsonParse().convertJsonModel(new OnBD().GetJsonModel(11)));
 
     }
+
+    private void showContent(final int year, final int month, final int days) {
+        RecyclerView rv = (RecyclerView) findViewById(R.id.rv);
+
+        LinearLayoutManager llm = new LinearLayoutManager(this);
+        rv.setLayoutManager(llm);
+        Model model = null;
+        if (modelInFile != 0) model = new JsonParse().importModelToJson(this);
+        else {
+            model = new JsonParse().convertJsonModel(new OnBD().GetJsonModel(11));// поменять на логин айди
+            new JsonParse().exportModelToJson(this, model);
+        }
+        RVAdapterDay adapter = new RVAdapterDay(model, new Time(year, month, days), 11, this);
+        rv.setAdapter(adapter);
+        RelativeLayout list = (RelativeLayout) findViewById(R.id.list);
+
+        Toolbar tool = (Toolbar) list.findViewById(R.id.toolbar);
+        setSupportActionBar(tool);
+        TextView day = (TextView) tool.findViewById(R.id.day);
+        tool.setTitle("");
+        day.setText("" + days + "." + month + "." + year);
+        day.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, CalendarActivity.class);
+                intent.putExtra("year", year);
+                intent.putExtra("month", month);
+                intent.putExtra("day", days);
+                startActivity(intent);
+
+            }
+
+        });
+    }
+
+    ;
+
 
     @Override
     protected void onResume() {
         super.onResume();
         Log.d(LOG_TAG, "onReturnMain");
         int permissionStatus = ContextCompat.checkSelfPermission(Ctn, Manifest.permission.ACCESS_FINE_LOCATION);
-        if(permissionStatus != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE_ACCESS_FINE_LOCATION);
+        if (permissionStatus != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE_ACCESS_FINE_LOCATION);
         }
         permissionStatus = ContextCompat.checkSelfPermission(Ctn, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if(permissionStatus != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_EXTERNAL_STORAGE);
+        if (permissionStatus != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_EXTERNAL_STORAGE);
         }
         permissionStatus = ContextCompat.checkSelfPermission(Ctn, Manifest.permission.RECEIVE_BOOT_COMPLETED);
-        if(permissionStatus != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.RECEIVE_BOOT_COMPLETED}, REQUEST_RECEIVE_BOOT_COMPLETED);
+        if (permissionStatus != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECEIVE_BOOT_COMPLETED}, REQUEST_RECEIVE_BOOT_COMPLETED);
         }
 
         Log.d(LOG_TAG, "onStartCommand");
         if (loadLogin_id() == 0) {
             Intent stopIntent = new Intent(MainActivity.this, New_login.class);
             startActivity(stopIntent);
-        }
-        else{
+        } else {
+
+            Intent intent = getIntent();
+
+            Calendar calendar = Calendar.getInstance();
+            int year = intent.getIntExtra("year", calendar.get(Calendar.YEAR));
+            int month = intent.getIntExtra("month", calendar.get(Calendar.MONTH)) + 1;
+            int days = intent.getIntExtra("day", calendar.get(Calendar.DAY_OF_MONTH));
+            this.showContent(year, month, days);
             try {
 
                 Intent ServiceIntent = new Intent();
@@ -145,27 +193,29 @@ public class MainActivity extends AppCompatActivity {
 
                 } else {
                     startService(stopIntent);
-                }                flag = 1;
-            }
-            catch (Exception e) {
-                Log.d(LOG_TAG,"ExpMain=" + e);
+                }
+                flag = 1;
+            } catch (Exception e) {
+                Log.d(LOG_TAG, "ExpMain=" + e);
 
             }
         }
 
 
     }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
 
     }
+
     @Override
     protected void onStop() {
         super.onStop();
     }
 
-    //работа с разрешениями
+    //?????? ? ????????????
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
@@ -199,15 +249,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     int loadLogin_id() {
-        sPref = getSharedPreferences("prefs",MODE_PRIVATE);
+        sPref = getSharedPreferences("prefs", MODE_PRIVATE);
         login_id = sPref.getInt("login_id", -1);
         login_name = sPref.getString("login_name", "");
+        modelInFile = sPref.getInt("model", 0);
         if (login_id == -1) return 0;
         else return 1;
 
     }
 
-    // меню сетиинг
+    // ???? ???????
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -225,7 +276,7 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            sPref = getSharedPreferences("prefs",MODE_PRIVATE);
+            sPref = getSharedPreferences("prefs", MODE_PRIVATE);
             Intent intent = new Intent(MainActivity.this, New_login.class);
             SharedPreferences.Editor ed = sPref.edit();
             ed.clear().commit();
@@ -242,12 +293,11 @@ public class MainActivity extends AppCompatActivity {
                 startService(stopIntent);
             }
         }
-        if (id==R.id.start){
+        if (id == R.id.start) {
             if (loadLogin_id() == 0) {
                 Intent stopIntent = new Intent(MainActivity.this, New_login.class);
                 startActivity(stopIntent);
-            }
-            else{
+            } else {
                 try {
 
                     Intent ServiceIntent = new Intent();
@@ -261,124 +311,16 @@ public class MainActivity extends AppCompatActivity {
 
                     } else {
                         startService(stopIntent);
-                    }                flag = 1;
-                }
-                catch (Exception e) {
-                    Log.d(LOG_TAG,"ExpMain=" + e);
+                    }
+                    flag = 1;
+                } catch (Exception e) {
+                    Log.d(LOG_TAG, "ExpMain=" + e);
 
                 }
             }
         }
         return super.onOptionsItemSelected(item);
     }
-
-    //отлдка
-/*
-    //класс слушателя гпс, реагирующего на изменения геоданных
-    private LocationListener locationListener = new LocationListener() {
-
-        @Override
-        public void onLocationChanged(Location loc) {
-            showLocation(loc);
-        }
-
-        @Override
-        public void onProviderDisabled(String provider) {
-            checkEnabled();
-        }
-
-        @Override
-        public void onProviderEnabled(String provider) {
-            checkEnabled();
-            int permissionStatus = ContextCompat.checkSelfPermission(Ctn, Manifest.permission.ACCESS_FINE_LOCATION);
-            showLocation(locationManager.getLastKnownLocation(provider));
-            //           lastPos = locationManager.getLastKnownLocation(provider);
-        }
-
-        @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {
-            Log.d(LOG_TAG, "off");
-            if (provider.equals(LocationManager.GPS_PROVIDER)) {
-                //MainText.setText("Status: " + String.valueOf(status));
-            } else if (provider.equals(LocationManager.NETWORK_PROVIDER)) {
-                //   MainText.setText("Status: " + String.valueOf(status));
-            }
-        }
-    };
-
-    // отправка пакетов
-    private void showLocation(Location location) {
-
-        String lat = String.format(Locale.ENGLISH,"%1$.4f",location.getLatitude());
-        String lon = String.format(Locale.ENGLISH,"%1$.4f",location.getLongitude());
-        String date = String.format(String.format("%1$tF %1$tT",location.getTime()));
-        String provider;
-
-        String speed2 = String.format(Locale.ENGLISH,"%1$.4f",location.getSpeed());
-        String speed="";
-
-
-        if (location.getProvider().equals(LocationManager.GPS_PROVIDER)) {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                speed = String.format(Locale.ENGLISH,"%1$.4f",location.getSpeedAccuracyMetersPerSecond());
-            }
-            provider = "GPS";
-            MainText.setText("Gps: " + speed2+"/"+speed+" date: "+date);
-        }
-        else if (location.getProvider().equals(LocationManager.NETWORK_PROVIDER)) {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                    speed = String.format(Locale.ENGLISH,"%1$.4f",location.getSpeedAccuracyMetersPerSecond());
-            }
-            provider = "NETWORK";
-            MainText.setText("Gps: " + speed2+"/"+speed+" date: "+date);
-        }
-        else provider = "OTHER";
-
-        if(oldLoc!=null)Netw.setText("Скорость: " + getSpeed(location,oldLoc) + " км/ч");
-        oldLoc = location;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-             speed = String.format(Locale.ENGLISH,"%1$.4f",location.getSpeedAccuracyMetersPerSecond());
-            Log.d(LOG_TAG,speed+"-"+provider);
-
-        }
-    }
-
-    private double getSpeed(Location locNew, Location locOld){
-
-        double latNew = Math.toRadians(locNew.getLatitude());
-        double latOld = Math.toRadians(locOld.getLatitude());
-        double lonNew = Math.toRadians(locNew.getLongitude());
-        double lonOld = Math.toRadians(locOld.getLongitude());
-        double timeNew = locNew.getTime();
-        double timeOld = locOld.getTime();
-
-   /*отладка
-
-
-        double latNew = 0.97305499494;
-        double latOld = 0.88059617782;
-        double lonNew = 0.65680618262;
-        double lonOld = 0.53273751349;
-
-
-        double timeNew  = 0.65680618262;
-        double timeOld  = 0.53273751349;
-
-    */
-/*
-        double delLat = latNew - latOld;
-        double delLon = lonNew - lonOld;
-
-        double stepOne=Math.sin(delLat/2)*Math.sin(delLat/2)
-                +Math.cos(latNew)*Math.cos(latOld)*Math.sin(delLon/2)*Math.sin(delLon/2);
-        double stepTwo = 2*Math.atan2(Math.sqrt(stepOne),Math.sqrt(1-stepOne));
-
-        double inKM = RADIUS*stepTwo;
-
-        double speed = inKM/Math.abs((timeNew-timeOld)/TIMEGPS);
-
-        return speed;
-    }*/
 
     private void checkEnabled() {
 

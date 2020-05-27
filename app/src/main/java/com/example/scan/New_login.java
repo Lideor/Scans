@@ -43,7 +43,7 @@ public class New_login extends Activity {
 
         super.onCreate(savedInstanceState);
         Log.d(LOG_TAG, "onStartlogin");
-loadLogin_id();
+        loadLogin_id();
         setContentView(R.layout.new_login);
         btnReg = (Button) findViewById(R.id.btnReg);
         loginName = (TextView) findViewById(R.id.NewLogin);

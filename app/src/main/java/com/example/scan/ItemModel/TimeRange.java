@@ -11,7 +11,7 @@ public class TimeRange{
     private Time end;
 
 
-    TimeRange(Time start, Time end){
+    public TimeRange(Time start, Time end){
         this.start=start;
         this.end=end;
     }

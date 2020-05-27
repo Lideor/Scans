@@ -69,7 +69,7 @@ public class ServiceGps extends Service {
 
     //работа с инетом
     private int fl=0;
-    private String urlOne = "http://www.zaural-vodokanal.ru/php/get_pos.php"; // отправка одного пакета локации
+    private String urlOne = "http://10.0.2.2:8000/cgi-bin/add_events.py"; // отправка одного пакета локации
     private String urlRem = "http://www.zaural-vodokanal.ru/php/get_pos_rem.php"; // отправка одного пакета локации
     Intent inten;
     private static final int NOTIFY_ID = 101;
