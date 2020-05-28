@@ -7,284 +7,438 @@
     android:background="@color/colorBackground"
     tools:context=".EventActivity">
 
+
     <RelativeLayout
         android:id="@+id/content"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
 
+        <androidx.appcompat.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?android:actionBarSize"
+            android:background="@color/colorPrimary"
+            app:layout_behavior="@string/action_settings"
+            app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
+
         <RelativeLayout
-            android:id="@+id/all"
+            android:id="@+id/start"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/text"
-            android:layout_gravity="clip_horizontal|center|center_horizontal"
+            android:layout_below="@+id/toolbar"
             android:background="@color/colorBackground"
-            android:gravity="center"
             android:paddingLeft="40dp"
             android:paddingTop="20dp"
             android:paddingRight="40dp">
 
-            <RelativeLayout
-                android:id="@+id/start"
+            <TextView
+                android:id="@+id/top"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@color/colorBackground">
+                android:layout_marginTop="4dp"
+                android:text="Введите параметры события" />
 
-                <TextView
-                    android:id="@+id/top"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:text="Введите параметры события" />
-
-                <Switch
-                    android:id="@+id/switch1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentRight="true"
-                    android:layout_gravity="end"
-                    android:layout_marginLeft="5dp"
-                    android:layout_toEndOf="@id/top"
-                    android:text="Цикл" />
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:id="@+id/title_event"
+            <Switch
+                android:id="@+id/switch_cycle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/start"
-                android:background="@color/colorBackground">
 
-                <TextView
-                    android:id="@+id/title"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:text="Название события" />
+                android:layout_marginStart="48dp"
+                android:layout_toEndOf="@id/top"
+                android:text="Цикл" />
+        </RelativeLayout>
 
-                <EditText
-                    android:id="@+id/title_text"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginLeft="20dp"
-                    android:layout_toEndOf="@id/title"
+        <RelativeLayout
+            android:id="@+id/no_cycle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/start">
 
-                    android:ems="10" />
-            </RelativeLayout>
 
             <RelativeLayout
-                android:id="@+id/time_event"
-                android:layout_width="match_parent"
+                android:id="@+id/all"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/title_event"
-                android:layout_centerInParent="true"
 
-                android:layout_marginTop="10dp"
-                android:background="@color/colorBackground">
+                android:layout_gravity="clip_horizontal|center|center_horizontal"
+                android:background="@color/colorBackground"
+                android:gravity="center"
+                android:paddingLeft="40dp"
 
-                <TextView
-                    android:id="@+id/time_start"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Время" />
+                android:paddingRight="40dp">
 
-                <TextView
-                    android:id="@+id/date_start"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="8dp"
-
-                    android:layout_toEndOf="@id/time_start"
-                    android:text="Дата" />
 
                 <RelativeLayout
-                    android:id="@+id/end_time_data"
-                    android:layout_width="match_parent"
+                    android:id="@+id/title_event"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:gravity="right"
-
-                    android:layout_toEndOf="@id/date_start"
+                    android:layout_below="@id/start"
                     android:background="@color/colorBackground">
 
                     <TextView
-                        android:id="@+id/time_end"
+                        android:id="@+id/title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:text="Название события" />
+
+                    <EditText
+                        android:id="@+id/title_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="20dp"
+                        android:layout_toEndOf="@id/title"
+
+                        android:ems="10" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/time_event"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/title_event"
+                    android:layout_centerInParent="true"
+
+                    android:layout_marginTop="10dp"
+                    android:background="@color/colorBackground">
+
+                    <TextView
+                        android:id="@+id/time_start"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Время" />
+
+                    <TextView
+                        android:id="@+id/date_start"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="8dp"
+
+                        android:layout_toEndOf="@id/time_start"
+                        android:text="Дата" />
+
+                    <RelativeLayout
+                        android:id="@+id/end_time_data"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_toEndOf="@id/date_start"
+
+                        android:background="@color/colorBackground"
+                        android:gravity="right">
+
+                        <TextView
+                            android:id="@+id/time_end"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+
+                            android:layout_marginRight="10dp"
+                            android:gravity="right"
+                            android:text="Время" />
+
+                        <TextView
+                            android:id="@+id/date_end"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_toEndOf="@id/time_end"
+
+
+                            android:gravity="right"
+                            android:text="Дата" />
+
+                    </RelativeLayout>
+                </RelativeLayout>
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/all"
+                android:layout_marginTop="10dp">
+
+                <TimePicker
+                    android:id="@+id/timePicker"
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:layout_centerHorizontal="true"
+                    android:amPmBackgroundColor="@color/colorAccent"
+                    android:background="@color/colorBackground"
+                    android:numbersBackgroundColor="@color/cardview_light_background">
+
+                    <View
+                        android:id="@+id/timePickerbutton"
+                        android:layout_width="40dp"
+
+                        android:layout_height="40dp"
+                        android:layout_marginLeft="20dp"
+                        android:layout_marginTop="20dp"
+                        android:background="@drawable/ic_dialog_close_dark" />
+                </TimePicker>
+
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:scaleX="1.2"
+                    android:scaleY="1.2">
+
+                    <DatePicker
+                        android:id="@+id/datePicker"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+
+                        android:layout_centerInParent="true"
+                        android:amPmBackgroundColor="@color/colorAccent"
+                        android:background="@color/colorBackground"
+                        android:gravity="center"
+                        android:numbersBackgroundColor="@color/cardview_light_background"
+                        android:saveEnabled="false">
+
+                        <View
+                            android:id="@+id/datePickerbutton"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:layout_alignParentRight="true"
+                            android:layout_gravity="end"
+                            android:layout_marginLeft="20dp"
+                            android:layout_marginTop="20dp"
+                            android:layout_marginRight="20dp"
+                            android:background="@drawable/ic_dialog_close_dark" />
+                    </DatePicker>
+                </RelativeLayout>
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/end"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/time"
+                android:layout_gravity="clip_horizontal|center|center_horizontal"
+                android:background="@color/colorBackground"
+                android:gravity="center"
+                android:paddingLeft="40dp"
+                android:paddingRight="40dp">
+
+                <RelativeLayout
+                    android:id="@+id/address"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <RelativeLayout
+                        android:id="@+id/text_address"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:id="@+id/title_address"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerVertical="true"
+                            android:text="Адресс" />
+
+                        <EditText
+
+                            android:id="@+id/edit_text"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_toEndOf="@id/title_address">
+
+                        </EditText>
+
+                        <TextView
+                            android:id="@+id/title_error_address"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@id/edit_text"
+                            android:text="Адрес не был обнаружен"
+                            android:textColor="@color/ErrorText"
+                            android:visibility="invisible" />
+
+                    </RelativeLayout>
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/rang"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/address">
+
+                    <TextView
+                        android:id="@+id/text_rang"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:text="Ранг" />
+
+                    <EditText
+                        android:id="@+id/number"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_toEndOf="@+id/text_rang"
+                        android:ems="2"
+                        android:inputType="number" />
+
+                    <View
+                        android:id="@+id/color"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:layout_gravity="end"
+                        android:layout_marginRight="8dp"
+                        android:background="@color/colorAccent">
+
+                    </View>
+
+
+                </RelativeLayout>
+
+                <Button
+                    android:id="@+id/add"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/rang"
+                    android:text="Добавить событие" />
+
+            </RelativeLayout>
+
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/cycle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:layout_below="@+id/start">
+
+            <RelativeLayout
+                android:id="@+id/time_event_cycle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@color/colorBackground"
+                android:paddingLeft="40dp"
+                android:paddingRight="40dp">
+
+                <TextView
+                    android:id="@+id/date_cycle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+
+
+                    android:text="Дата" />
+
+                <RelativeLayout
+                    android:id="@+id/time_cycle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_toEndOf="@id/date_cycle"
+
+                    android:background="@color/colorBackground"
+                    android:gravity="right">
+
+                    <TextView
+                        android:id="@+id/time_cycle_start"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
 
                         android:layout_marginRight="10dp"
                         android:gravity="right"
-                        android:text="Время" />
+                        android:text="Время начала" />
 
                     <TextView
-                        android:id="@+id/date_end"
+                        android:id="@+id/time_cycle_end"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_toEndOf="@id/time_end"
+                        android:layout_toEndOf="@id/time_cycle_start"
 
 
                         android:gravity="right"
-                        android:text="Дата" />
+                        android:text="Время конца" />
 
                 </RelativeLayout>
             </RelativeLayout>
-        </RelativeLayout>
 
-        <RelativeLayout
-            android:id="@+id/time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/all"
-            android:layout_marginTop="10dp">
-
-            <TimePicker
-                android:id="@+id/timePicker"
-                android:layout_width="wrap_content"
-                android:layout_height="0dp"
-                android:layout_centerHorizontal="true"
-                android:amPmBackgroundColor="@color/colorAccent"
-                android:background="@color/colorBackground"
-                android:numbersBackgroundColor="@color/cardview_light_background">
-
-                <View
-                    android:id="@+id/timePickerbutton"
-                    android:layout_width="40dp"
-
-                    android:layout_height="40dp"
-                    android:layout_marginLeft="20dp"
-                    android:layout_marginTop="20dp"
-                    android:background="@drawable/ic_dialog_close_dark" />
-            </TimePicker>
-            <RelativeLayout
+            <TextView
+                android:id="@+id/params"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:scaleX="1.2"
-                android:scaleY="1.2"
-             >
-            <DatePicker
-                android:id="@+id/datePicker"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
+                android:paddingLeft="40dp"
+                android:paddingTop="7dp"
+                android:text="Параметры события:"
+                android:layout_below="@+id/time_event_cycle"/>
 
-                android:layout_centerInParent="true"
-                android:amPmBackgroundColor="@color/colorAccent"
-                android:background="@color/colorBackground"
-                android:gravity="center"
-                android:numbersBackgroundColor="@color/cardview_light_background"
-                android:saveEnabled="false"
->
-
-                <View
-                    android:id="@+id/datePickerbutton"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_alignParentRight="true"
-                    android:layout_gravity="end"
-                    android:layout_marginLeft="20dp"
-                    android:layout_marginTop="20dp"
-                    android:layout_marginRight="20dp"
-                    android:background="@drawable/ic_dialog_close_dark" />
-            </DatePicker>
-        </RelativeLayout>
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:id="@+id/end"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/time"
-            android:layout_gravity="clip_horizontal|center|center_horizontal"
-            android:background="@color/colorBackground"
-            android:gravity="center"
-            android:paddingLeft="40dp"
-            android:paddingRight="40dp">
 
             <RelativeLayout
-                android:id="@+id/address"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:id="@+id/time_cycle_select"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/params"
+                android:layout_marginTop="10dp">
+
+                <TimePicker
+                    android:id="@+id/time_picker_cycle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:layout_centerHorizontal="true"
+                    android:amPmBackgroundColor="@color/colorAccent"
+                    android:background="@color/colorBackground"
+                    android:numbersBackgroundColor="@color/cardview_light_background">
+
+                    <View
+                        android:id="@+id/time_picker_button_cycle"
+                        android:layout_width="40dp"
+
+                        android:layout_height="40dp"
+                        android:layout_marginLeft="20dp"
+                        android:layout_marginTop="20dp"
+                        android:background="@drawable/ic_dialog_close_dark" />
+                </TimePicker>
 
                 <RelativeLayout
-                    android:id="@+id/text_address"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:scaleX="1.2"
+                    android:scaleY="1.2">
 
-                    <TextView
-                        android:id="@+id/title_address"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_centerVertical="true"
-                        android:text="Адресс" />
-
-                    <EditText
-
-                        android:id="@+id/edit_text"
+                    <DatePicker
+                        android:id="@+id/date_picker_cycle"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_toEndOf="@id/title_address">
+                        android:layout_height="0dp"
 
-                    </EditText>
+                        android:layout_centerInParent="true"
+                        android:amPmBackgroundColor="@color/colorAccent"
+                        android:background="@color/colorBackground"
+                        android:gravity="center"
+                        android:numbersBackgroundColor="@color/cardview_light_background"
+                        android:saveEnabled="false">
 
-                    <TextView
-                        android:id="@+id/title_error_address"
-                        android:visibility="invisible"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_below="@id/edit_text"
-                        android:textColor="@color/ErrorText"
-                        android:text="Адрес не был обнаружен" />
-
+                        <View
+                            android:id="@+id/date_picker_button_cycle"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:layout_alignParentRight="true"
+                            android:layout_gravity="end"
+                            android:layout_marginLeft="20dp"
+                            android:layout_marginTop="20dp"
+                            android:layout_marginRight="20dp"
+                            android:background="@drawable/ic_dialog_close_dark" />
+                    </DatePicker>
                 </RelativeLayout>
-
             </RelativeLayout>
-
-            <RelativeLayout
-                android:id="@+id/rang"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/address">
-
-                <TextView
-                    android:id="@+id/text_rang"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:text="Ранг" />
-
-                <EditText
-                    android:id="@+id/number"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_toEndOf="@+id/text_rang"
-                    android:ems="2"
-                    android:inputType="number" />
-
-                <View
-                    android:id="@+id/color"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:layout_gravity="end"
-                    android:layout_marginRight="8dp"
-                    android:background="@color/colorAccent">
-
-                </View>
-
-
-            </RelativeLayout>
-
             <Button
-                android:id="@+id/add"
+                android:id="@+id/add_cycle"
+                android:layout_marginLeft="40dp"
+                android:layout_marginRight="40dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/rang"
+                android:layout_below="@id/time_cycle_select"
                 android:text="Добавить событие" />
 
         </RelativeLayout>
-
-
     </RelativeLayout>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

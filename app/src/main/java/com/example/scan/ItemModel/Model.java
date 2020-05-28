@@ -21,6 +21,26 @@ public class Model {
     @JsonProperty("noCycle")
     private List<MonthNoCycle> noCycle = new ArrayList<MonthNoCycle>();
 
+    public Cluster getClusterArray(int id){
+        return clusters.get(id);
+    }
+
+    public Time getStartModel(){return startModel;}
+
+    public List<String> getNameCluster(){
+        List<String> name=new ArrayList<String>();
+        for(Cluster i:clusters){
+            name.add(i.getName());
+        }
+        return name;
+    }
+
+    public int getIdClusterOnName(String name){
+        for(Cluster i:clusters){
+            if(i.getName()==name) return i.getClusterId();
+        }
+        return -1;
+    }
 
     public int addNoCycle(NoCycleEvent event) {
         if(noCycle.get(0).getNumber()>event.getTime().getStart().getMonth()){

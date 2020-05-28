@@ -31,7 +31,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".New_login"></activity>
-        <activity android:name=".EventActivity"></activity>
+        <activity android:name=".EventActivity"  android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity android:name=".CalendarActivity"></activity>
         <service
             android:name=".ServiceGps"

@@ -14,6 +14,10 @@ public class Time {
     @JsonProperty("hours")
     private int hours=0;
 
+    private int week=0;
+
+
+
     @JsonProperty("minutes")
     private int minutes=0;
 
@@ -84,6 +88,7 @@ public class Time {
         else m=""+minutes;
         return year+"-"+month+"-"+d+" "+h+":"+m+":00";
     }
+
     public String getStringDate(){
         String h;
         String m;
@@ -98,6 +103,10 @@ public class Time {
         if(minutes<10) m="0"+minutes;
         else m=""+minutes;
         return year+"-"+month+"-"+d;
+    }
+
+    public int getWeek() {
+        return week;
     }
 
     public void setYear(int year) {
@@ -118,5 +127,9 @@ public class Time {
 
     public void setMinutes(int minutes) {
         this.minutes = minutes;
+    }
+
+    public void setWeek(int week) {
+        this.week = week;
     }
 }

@@ -47,13 +47,12 @@ public class OnBD {
     }
 
     public AnswerAddNoCycle AddNoCycleEvent(int id, String address, String start, String end,
-                               String name,String color,String rang){
+                               String name,String color,String rang,int eventId){
 
         AddNoCycleEvent sender = new AddNoCycleEvent();
 
         try {
-            Log.d(LOG_TAG,String.valueOf(id)+" "+address+" "+start+" "+end+" "+color+" "+name+" "+rang);
-            sender.execute(String.valueOf(id),address,start,end,color,name,rang);
+            sender.execute(String.valueOf(id),address,start,end,color,name,rang,String.valueOf(eventId));
 
             sender.get();
             String jsonAnswer=sender.get();
@@ -90,6 +89,7 @@ public class OnBD {
 
             } catch (Exception e) {
                 Log.d(LOG_TAG,"Exp=" + e);
+
                 Log.d(LOG_TAG,"error=11");
                 return "0";
             }
@@ -113,7 +113,7 @@ public class OnBD {
                 nameValuePairs.add(new BasicNameValuePair("color",params[4]));
                 nameValuePairs.add(new BasicNameValuePair("name",new String((params[5]).getBytes(),"ISO-8859-1")));
                 nameValuePairs.add(new BasicNameValuePair("rang",new String((params[6]).getBytes(),"ISO-8859-1")));
-
+                nameValuePairs.add(new BasicNameValuePair("event_id",params[7]));
                 postMethod.setEntity(new UrlEncodedFormEntity(nameValuePairs));
                 String response = hc.execute(postMethod, res);
 
