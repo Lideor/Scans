@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
         });
-        //new JsonParse().exportModelToJson(this,new JsonParse().convertJsonModel(new OnBD().GetJsonModel(11)));
+        ///new JsonParse().exportModelToJson(this,new JsonParse().convertJsonModel(new OnBD().GetJsonModel(11)));
        // Model model = new JsonParse().importModelToJson(this);
      //   model.getCluster(1);
     }
